@@ -1,0 +1,1367 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Sign in to your Tapo account",
+        "description": "Home Assistant reads face notifications from your Tapo account: enter the email and password used in the Tapo app, a code by email if Tapo asks, then pick the camera. Local standalone login was removed as a sign-in option; existing local entries keep working."
+      },
+      "tapo_control": {
+        "title": "Use existing Tapo Control",
+        "description": "Select the working C260 from Tapo: Cameras Control. This companion only adds read-only sensors and face metadata. It does not copy passwords or close the source connection. Keep Tapo Control installed and enabled.",
+        "data": {
+          "tapo_control_entry_id": "Camera in Tapo Control"
+        }
+      },
+      "standalone": {
+        "title": "Independent camera login",
+        "description": "Native pytapo local login, no Tapo Control required. Creates only settings exposed by the camera. Face APIs depend on firmware. Uses self-signed TLS: trusted LAN only.",
+        "data": {
+          "host": "Camera IP or hostname",
+          "port": "HTTPS control port",
+          "auth_mode": "Account type",
+          "username": "Camera Account username (ignored for Tapo account)",
+          "password": "Password for the selected account",
+          "name": "Name",
+          "stream_url": "RTSP URL (optional, separate credentials)"
+        },
+        "data_description": {
+          "auth_mode": "Tapo account: use the password you use in the Tapo app; local API username is admin, not your email. Camera Account: use the account created in the camera settings if your firmware accepts it.",
+          "username": "Only used for Camera Account. Tapo account mode always uses admin.",
+          "password": "Sent to the camera on your LAN, not to a cloud login API. Stored in the HA config entry; protect your configuration and backups.",
+          "stream_url": "Do not reuse the Tapo password for RTSP. Leave omitted to keep an existing URL during reconfiguration; submit an empty value to remove it."
+        }
+      },
+      "reconfigure": {
+        "title": "Switch to / reconfigure independent login",
+        "description": "Native pytapo local login, no Tapo Control required. Creates only settings exposed by the camera. Face APIs depend on firmware. Uses self-signed TLS: trusted LAN only.",
+        "data": {
+          "host": "Camera IP or hostname",
+          "port": "HTTPS control port",
+          "auth_mode": "Account type",
+          "username": "Camera Account username (ignored for Tapo account)",
+          "password": "Password for the selected account",
+          "name": "Name",
+          "stream_url": "RTSP URL (optional, separate credentials)"
+        },
+        "data_description": {
+          "auth_mode": "Tapo account: use the password you use in the Tapo app; local API username is admin, not your email. Camera Account: use the account created in the camera settings if your firmware accepts it.",
+          "username": "Only used for Camera Account. Tapo account mode always uses admin.",
+          "password": "Sent to the camera on your LAN, not to a cloud login API. Stored in the HA config entry; protect your configuration and backups.",
+          "stream_url": "Do not reuse the Tapo password for RTSP. Leave omitted to keep an existing URL during reconfiguration; submit an empty value to remove it."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Sign in to the camera again",
+        "description": "Native pytapo local login, no Tapo Control required. Creates only settings exposed by the camera. Face APIs depend on firmware. Uses self-signed TLS: trusted LAN only.",
+        "data": {
+          "host": "Camera IP or hostname",
+          "port": "HTTPS control port",
+          "auth_mode": "Account type",
+          "username": "Camera Account username (ignored for Tapo account)",
+          "password": "Password for the selected account",
+          "name": "Name",
+          "stream_url": "RTSP URL (optional, separate credentials)"
+        },
+        "data_description": {
+          "auth_mode": "Tapo account: use the password you use in the Tapo app; local API username is admin, not your email. Camera Account: use the account created in the camera settings if your firmware accepts it.",
+          "username": "Only used for Camera Account. Tapo account mode always uses admin.",
+          "password": "Sent to the camera on your LAN, not to a cloud login API. Stored in the HA config entry; protect your configuration and backups.",
+          "stream_url": "Do not reuse the Tapo password for RTSP. Leave omitted to keep an existing URL during reconfiguration; submit an empty value to remove it."
+        }
+      },
+      "cloud_login": {
+        "title": "Sign in to your Tapo account",
+        "description": "Use the account from the Tapo app, not your HA or Camera Account. No JSON file or Tapo Control needed. Continuing authorizes one verification email if Tapo requires MFA. Password and OTP are not saved. HA stores the session privately; protect HA access and backups. Region is optional (e.g. VN).",
+        "data": {
+          "email": "Tapo email",
+          "password": "Tapo password",
+          "region": "Region code (optional)"
+        }
+      },
+      "cloud_mfa": {
+        "title": "Tapo email verification",
+        "description": "Enter the six-digit code sent to your Tapo email. Keep leading zeroes. One verification request is sent; do not share the code. If it is rejected or expired, start sign-in again. MFA is never disabled and this machine is not marked trusted.",
+        "data": {
+          "code": "Verification code"
+        }
+      },
+      "cloud_device": {
+        "title": "Choose your camera",
+        "description": "Select a C260. HA keeps face name/time sensors and adds person, stranger, pet, vehicle and sound notifications plus camera settings over cloud. Notifications default to 5 seconds (30 when idle); settings sync independently every 30 seconds. No local login or Tapo Control needed. Cloud images/video are not implemented.",
+        "data": {
+          "camera_id": "Camera"
+        }
+      },
+      "license": {
+        "title": "Tapo Connect license",
+        "description": "No key yet? [Register, get a free 1-day trial or buy a license]({license_url}). One key binds one custom entry in HA. Paid duration starts on first activation; trial starts when issued. Paste the key below. Tapo credentials are never sent to the license server.",
+        "data": {
+          "license_key": "License Key"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Camera transport failed. This can be TLS, session or network compatibility, not necessarily a firewall problem. If Tapo Control works, use the existing-controller option.",
+      "unexpected_response": "The camera replied, but the response format was unexpected. This is not proof of a network fault. Check the sanitized tapo_camera_local log or use the existing Tapo Control option.",
+      "request_rejected": "The camera rejected the basic-info query. Check the method/error code in the sanitized tapo_camera_local log.",
+      "source_not_ready": "The Tapo Control source is unavailable or rejected the request. Connect/reload that integration first, keep it enabled, then retry. Do not enter its password here.",
+      "invalid_auth": "Camera rejected or temporarily blocked login. Verify the API account/firmware; avoid repeated incorrect passwords.",
+      "unknown": "Unexpected error. Enable debug logging for tapo_camera_local and check the logs.",
+      "invalid_input": "Check the host, port, account type and nonempty password.",
+      "cloud_auth": "Cloud session rejected. Import a new owner-verified MFA profile.",
+      "cloud_profile": "Cannot read the private profile or cloud reply. Check file permissions, network and session validity.",
+      "cloud_app_invalid": "Shared protocol files are missing or damaged. Reinstall the complete integration.",
+      "cloud_invalid_auth": "Tapo rejected the account. Check email/password; do not retry repeatedly.",
+      "cloud_locked": "Account temporarily locked or rate-limited. Wait before signing in again.",
+      "cloud_invalid_input": "Check the email, password and optional two-letter region code.",
+      "cloud_mfa_unsupported": "This account requires an unsupported verification method. Check the Tapo app.",
+      "cloud_mfa_expired": "Verification expired. Start sign-in again to request a new code.",
+      "cloud_invalid_code": "Use a valid six-digit code. If Tapo already rejected it, start sign-in again.",
+      "cloud_restart_login": "The session needs verification. Start sign-in again; no JSON file is required.",
+      "cloud_cannot_connect": "Cannot read the Tapo cloud reply. No password or code request is automatically retried.",
+      "cloud_bad_response": "Tapo returned an unsupported response. Check diagnostics without sharing credentials.",
+      "cloud_bad_request": "This cloud operation is not permitted.",
+      "cloud_busy": "A sign-in request is still running. Wait; do not submit again.",
+      "cloud_no_devices": "No supported C260 was found in this account.",
+      "cloud_invalid_device": "Select a camera returned by your account.",
+      "cloud_storage": "HA could not save the private session. Check free space and config permissions, then retry camera selection.",
+      "license_unavailable": "License server unavailable. Try again; existing camera credentials are unchanged.",
+      "license_rejected": "Invalid, expired, blocked or already bound key. Check the dashboard or contact your administrator."
+    },
+    "abort": {
+      "already_configured": "This camera and connection mode are already configured. Use Reconfigure on the existing entry.",
+      "no_tapo_control": "No Tapo Control entry to link. Go back and choose Independent login.",
+      "wrong_device": "The camera or cloud profile has a different device ID. Existing configuration is unchanged.",
+      "source_reauth": "Repair authentication in Tapo Control, or use Reconfigure to switch to independent login.",
+      "reconfigure_successful": "Configuration saved; Home Assistant is reloading the entry.",
+      "reauth_successful": "Authentication updated; Home Assistant is reloading the entry.",
+      "cloud_app_invalid": "Shared protocol files are missing or damaged. Reinstall the complete integration.",
+      "cloud_invalid_auth": "Tapo rejected the account. Check email/password; do not retry repeatedly.",
+      "cloud_locked": "Account temporarily locked or rate-limited. Wait before signing in again.",
+      "cloud_invalid_input": "Check the email, password and optional two-letter region code.",
+      "cloud_mfa_unsupported": "This account requires an unsupported verification method. Check the Tapo app.",
+      "cloud_mfa_expired": "Verification expired. Start sign-in again to request a new code.",
+      "cloud_invalid_code": "Use a valid six-digit code. If Tapo already rejected it, start sign-in again.",
+      "cloud_restart_login": "The session needs verification. Start sign-in again; no JSON file is required.",
+      "cloud_cannot_connect": "Cannot read the Tapo cloud reply. No password or code request is automatically retried.",
+      "cloud_bad_response": "Tapo returned an unsupported response. Check diagnostics without sharing credentials.",
+      "cloud_bad_request": "This cloud operation is not permitted.",
+      "cloud_busy": "A sign-in request is still running. Wait; do not submit again.",
+      "cloud_no_devices": "No supported C260 was found in this account.",
+      "cloud_invalid_device": "Select a camera returned by your account.",
+      "cloud_storage": "HA could not save the private session. Check free space and config permissions, then retry camera selection.",
+      "license_configuration": "The publisher must configure the HTTPS license server and public signing key first.",
+      "license_required": "Start again from Add integration and activate your license first.",
+      "license_in_use": "This key is already assigned to another custom entry in this HA.",
+      "license_flow_in_progress": "Finish or cancel the other license onboarding flow before starting another camera."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "cloud_notification_familiar": {
+        "name": "Last familiar face notification"
+      },
+      "cloud_notification_stranger": {
+        "name": "Last stranger notification"
+      },
+      "cloud_notification_person": {
+        "name": "Last person notification"
+      },
+      "cloud_notification_pet": {
+        "name": "Last pet notification"
+      },
+      "cloud_notification_vehicle": {
+        "name": "Last vehicle notification"
+      },
+      "cloud_notification_motion": {
+        "name": "Last motion notification"
+      },
+      "cloud_notification_audio": {
+        "name": "Last sound notification"
+      },
+      "cloud_notification_baby_cry": {
+        "name": "Last baby crying notification"
+      },
+      "cloud_notification_bark": {
+        "name": "Last barking notification"
+      },
+      "cloud_notification_meow": {
+        "name": "Last meowing notification"
+      },
+      "cloud_notification_glass_break": {
+        "name": "Last glass breaking notification"
+      },
+      "cloud_notification_smoke_alarm": {
+        "name": "Last smoke alarm sound notification"
+      },
+      "cloud_notification_tampering": {
+        "name": "Last camera tampering notification"
+      },
+      "cloud_notification_intrusion": {
+        "name": "Last area intrusion notification"
+      },
+      "cloud_notification_line_crossing": {
+        "name": "Last line crossing notification"
+      },
+      "cloud_notification_loitering": {
+        "name": "Last loitering notification"
+      },
+      "cloud_notification_package_delivered": {
+        "name": "Last package delivered notification"
+      },
+      "cloud_notification_package_removed": {
+        "name": "Last package removed notification"
+      },
+      "cloud_notification_anti_theft": {
+        "name": "Last anti-theft alert notification"
+      },
+      "cloud_notification_doorbell": {
+        "name": "Last doorbell notification"
+      },
+      "cloud_notification_missed_doorbell": {
+        "name": "Last missed doorbell notification"
+      },
+      "cloud_notification_sd_uninitialized": {
+        "name": "Last sd card needs initialization notification"
+      },
+      "cloud_notification_sd_full": {
+        "name": "Last sd card storage low notification"
+      },
+      "cloud_notification_disk_uninitialized": {
+        "name": "Last disk needs initialization notification"
+      },
+      "cloud_notification_disk_full": {
+        "name": "Last disk storage low notification"
+      },
+      "cloud_notification_sd_encryption_disabled": {
+        "name": "Last sd encryption disabled notification"
+      },
+      "cloud_notification_sd_decryption_failed": {
+        "name": "Last sd decryption failed notification"
+      },
+      "cloud_notification_low_battery": {
+        "name": "Last low battery notification"
+      },
+      "cloud_notification_battery_empty": {
+        "name": "Last battery empty notification"
+      },
+      "cloud_notification_battery_charged": {
+        "name": "Last battery fully charged notification"
+      },
+      "cloud_notification_overheat": {
+        "name": "Last device overheating notification"
+      },
+      "cloud_notification_overheat_cleared": {
+        "name": "Last overheating cleared notification"
+      },
+      "cloud_notification_new_firmware": {
+        "name": "Last new firmware notification"
+      },
+      "cloud_notification_multiple_detection": {
+        "name": "Last multiple detection types notification"
+      },
+      "cloud_notification_latest_time": {
+        "name": "Last camera notification time"
+      },
+      "cloud_notification_latest_type": {
+        "name": "Last camera notification type",
+        "state": {
+          "familiar": "Familiar face",
+          "stranger": "Stranger",
+          "person": "Person",
+          "pet": "Pet",
+          "vehicle": "Vehicle",
+          "motion": "Motion",
+          "audio": "Sound",
+          "baby_cry": "Baby crying",
+          "bark": "Barking",
+          "meow": "Meowing",
+          "glass_break": "Glass breaking",
+          "smoke_alarm": "Smoke alarm sound",
+          "tampering": "Camera tampering",
+          "intrusion": "Area intrusion",
+          "line_crossing": "Line crossing",
+          "loitering": "Loitering",
+          "package_delivered": "Package delivered",
+          "package_removed": "Package removed",
+          "anti_theft": "Anti-theft alert",
+          "doorbell": "Doorbell",
+          "missed_doorbell": "Missed doorbell",
+          "sd_uninitialized": "SD card needs initialization",
+          "sd_full": "SD card storage low",
+          "disk_uninitialized": "Disk needs initialization",
+          "disk_full": "Disk storage low",
+          "sd_encryption_disabled": "SD encryption disabled",
+          "sd_decryption_failed": "SD decryption failed",
+          "low_battery": "Low battery",
+          "battery_empty": "Battery empty",
+          "battery_charged": "Battery fully charged",
+          "overheat": "Device overheating",
+          "overheat_cleared": "Overheating cleared",
+          "new_firmware": "New firmware",
+          "multiple_detection": "Multiple detection types"
+        }
+      },
+      "model": {
+        "name": "Model"
+      },
+      "firmware": {
+        "name": "Firmware"
+      },
+      "hardware": {
+        "name": "Hardware"
+      },
+      "mac": {
+        "name": "MAC address"
+      },
+      "ip_address": {
+        "name": "IP address"
+      },
+      "device_id": {
+        "name": "Device ID"
+      },
+      "connection_type": {
+        "name": "Connection type"
+      },
+      "wifi_signal": {
+        "name": "Wi-Fi signal"
+      },
+      "signal_level": {
+        "name": "Wi-Fi signal level"
+      },
+      "sd_card": {
+        "name": "SD card"
+      },
+      "last_alarm_type": {
+        "name": "Last alarm code"
+      },
+      "last_alarm_at": {
+        "name": "Last alarm time"
+      },
+      "face_api_status": {
+        "name": "Face API status",
+        "state": {
+          "available": "Available",
+          "events_without_names": "Events without names",
+          "catalog_only": "Catalog only",
+          "unsupported": "Unsupported",
+          "rejected": "Rejected",
+          "transient_error": "Temporary error",
+          "invalid_response": "Unexpected response",
+          "not_tested": "Not queried"
+        }
+      },
+      "face_count": {
+        "name": "Face catalog count"
+      },
+      "last_face_id": {
+        "name": "Last face ID"
+      },
+      "last_face_name": {
+        "name": "Last recognized face"
+      },
+      "last_face_tag": {
+        "name": "Last face tag"
+      },
+      "last_recognized_at": {
+        "name": "Last recognized at"
+      },
+      "face_last_seen": {
+        "name": "Face {face_id} last seen"
+      },
+      "face_name": {
+        "name": "Face {face_id} name"
+      },
+      "cloud_face_name": {
+        "name": "Last person reported by Tapo"
+      },
+      "cloud_face_time": {
+        "name": "Last face notification time"
+      },
+      "cloud_face_type": {
+        "name": "Last face notification type",
+        "state": {
+          "familiar": "Familiar",
+          "stranger": "Stranger"
+        }
+      },
+      "cloud_person_time": {
+        "name": "Last recognition notification for {person}"
+      },
+      "face_image": {
+        "name": "Face {face_id} image"
+      },
+      "stream": {
+        "name": "Live stream"
+      },
+      "sub_stream": {
+        "name": "Low bandwidth stream"
+      },
+      "status_led": {
+        "name": "Status LED"
+      },
+      "led": {
+        "name": "Status LED enabled"
+      },
+      "privacy_mode": {
+        "name": "Privacy mode"
+      },
+      "lens_cover": {
+        "name": "Lens covered"
+      },
+      "recording": {
+        "name": "Recording schedule enabled"
+      },
+      "recording_loop": {
+        "name": "Loop recording"
+      },
+      "record_audio": {
+        "name": "Record audio"
+      },
+      "microphone_mute": {
+        "name": "Mute microphone"
+      },
+      "noise_cancelling": {
+        "name": "Microphone noise reduction"
+      },
+      "speaker_volume": {
+        "name": "Speaker volume"
+      },
+      "microphone_volume": {
+        "name": "Microphone volume"
+      },
+      "day_night_mode": {
+        "name": "Day/night mode"
+      },
+      "light_frequency": {
+        "name": "Anti-flicker frequency"
+      },
+      "image_flip": {
+        "name": "Rotate image 180 degrees"
+      },
+      "lens_correction": {
+        "name": "Lens distortion correction"
+      },
+      "white_lamp": {
+        "name": "White lamp"
+      },
+      "auto_tracking": {
+        "name": "Automatic tracking"
+      },
+      "privacy_zones": {
+        "name": "Privacy masking zones"
+      },
+      "notifications": {
+        "name": "Tapo notifications"
+      },
+      "rich_notifications": {
+        "name": "Tapo rich notifications"
+      },
+      "preset": {
+        "name": "Go to PTZ preset"
+      },
+      "ptz_stop": {
+        "name": "Stop PTZ"
+      },
+      "ptz_left": {
+        "name": "Pan left one step"
+      },
+      "ptz_right": {
+        "name": "Pan right one step"
+      },
+      "ptz_up": {
+        "name": "Tilt up one step"
+      },
+      "ptz_down": {
+        "name": "Tilt down one step"
+      },
+      "ptz_calibrate": {
+        "name": "Calibrate PTZ"
+      },
+      "cruise_horizontal": {
+        "name": "Start horizontal cruise"
+      },
+      "cruise_vertical": {
+        "name": "Start vertical cruise"
+      },
+      "cruise_stop": {
+        "name": "Stop cruise"
+      },
+      "manual_alarm_start": {
+        "name": "Sound manual alarm"
+      },
+      "manual_alarm_stop": {
+        "name": "Stop manual alarm"
+      },
+      "refresh": {
+        "name": "Refresh camera data"
+      },
+      "cloud_refresh": {
+        "name": "Check Tapo notifications now"
+      },
+      "reboot": {
+        "name": "Reboot camera"
+      },
+      "motion_detection_enabled": {
+        "name": "Motion detection"
+      },
+      "motion_detection_sensitivity": {
+        "name": "Motion detection sensitivity"
+      },
+      "motion_detection_digital_sensitivity": {
+        "name": "Motion detection sensitivity"
+      },
+      "people_detection_enabled": {
+        "name": "Person detection"
+      },
+      "people_detection_sensitivity": {
+        "name": "Person detection sensitivity"
+      },
+      "people_detection_digital_sensitivity": {
+        "name": "Person detection sensitivity"
+      },
+      "pet_detection_enabled": {
+        "name": "Pet detection"
+      },
+      "pet_detection_sensitivity": {
+        "name": "Pet detection sensitivity"
+      },
+      "pet_detection_digital_sensitivity": {
+        "name": "Pet detection sensitivity"
+      },
+      "vehicle_detection_enabled": {
+        "name": "Vehicle detection"
+      },
+      "vehicle_detection_sensitivity": {
+        "name": "Vehicle detection sensitivity"
+      },
+      "vehicle_detection_digital_sensitivity": {
+        "name": "Vehicle detection sensitivity"
+      },
+      "bark_detection_enabled": {
+        "name": "Bark detection"
+      },
+      "bark_detection_sensitivity": {
+        "name": "Bark detection sensitivity"
+      },
+      "bark_detection_digital_sensitivity": {
+        "name": "Bark detection sensitivity"
+      },
+      "meow_detection_enabled": {
+        "name": "Meow detection"
+      },
+      "meow_detection_sensitivity": {
+        "name": "Meow detection sensitivity"
+      },
+      "meow_detection_digital_sensitivity": {
+        "name": "Meow detection sensitivity"
+      },
+      "glass_detection_enabled": {
+        "name": "Glass-break detection"
+      },
+      "glass_detection_sensitivity": {
+        "name": "Glass-break detection sensitivity"
+      },
+      "glass_detection_digital_sensitivity": {
+        "name": "Glass-break detection sensitivity"
+      },
+      "tamper_detection_enabled": {
+        "name": "Tamper detection"
+      },
+      "tamper_detection_sensitivity": {
+        "name": "Tamper detection sensitivity"
+      },
+      "tamper_detection_digital_sensitivity": {
+        "name": "Tamper detection sensitivity"
+      },
+      "sound_detection_enabled": {
+        "name": "Baby-cry detection"
+      },
+      "sound_detection_sensitivity": {
+        "name": "Baby-cry detection sensitivity"
+      },
+      "sound_detection_digital_sensitivity": {
+        "name": "Baby-cry detection sensitivity"
+      },
+      "linecrossing_detection_enabled": {
+        "name": "Line-crossing detection"
+      },
+      "linecrossing_detection_sensitivity": {
+        "name": "Line-crossing detection sensitivity"
+      },
+      "linecrossing_detection_digital_sensitivity": {
+        "name": "Line-crossing detection sensitivity"
+      },
+      "intrusion_detection_enabled": {
+        "name": "Intrusion detection"
+      },
+      "intrusion_detection_sensitivity": {
+        "name": "Intrusion detection sensitivity"
+      },
+      "intrusion_detection_digital_sensitivity": {
+        "name": "Intrusion detection sensitivity"
+      },
+      "face_detection_enabled": {
+        "name": "Face recognition"
+      },
+      "face_detection_sensitivity": {
+        "name": "Face recognition sensitivity"
+      },
+      "face_detection_digital_sensitivity": {
+        "name": "Face recognition sensitivity"
+      },
+      "smart_tracking_people": {
+        "name": "Track people"
+      },
+      "smart_tracking_pet": {
+        "name": "Track pets"
+      },
+      "smart_tracking_vehicle": {
+        "name": "Track vehicles"
+      },
+      "smart_tracking_baby": {
+        "name": "Track babies"
+      },
+      "recording_monday": {
+        "name": "Monday recording periods"
+      },
+      "recording_tuesday": {
+        "name": "Tuesday recording periods"
+      },
+      "recording_wednesday": {
+        "name": "Wednesday recording periods"
+      },
+      "recording_thursday": {
+        "name": "Thursday recording periods"
+      },
+      "recording_friday": {
+        "name": "Friday recording periods"
+      },
+      "recording_saturday": {
+        "name": "Saturday recording periods"
+      },
+      "recording_sunday": {
+        "name": "Sunday recording periods"
+      },
+      "sd_status": {
+        "name": "SD {card} status"
+      },
+      "sd_capacity": {
+        "name": "SD {card} capacity"
+      },
+      "sd_free": {
+        "name": "SD {card} free"
+      },
+      "sd_used": {
+        "name": "SD {card} used"
+      },
+      "sd_total": {
+        "name": "SD {card} total"
+      },
+      "sd_percent": {
+        "name": "SD {card} percent"
+      },
+      "sd_free_space": {
+        "name": "SD {card} free space"
+      },
+      "sd_total_space": {
+        "name": "SD {card} total space"
+      }
+    },
+    "binary_sensor": {
+      "cloud_recent_familiar": {
+        "name": "Recent familiar face notification"
+      },
+      "cloud_recent_stranger": {
+        "name": "Recent stranger notification"
+      },
+      "cloud_recent_person": {
+        "name": "Recent person notification"
+      },
+      "cloud_recent_pet": {
+        "name": "Recent pet notification"
+      },
+      "cloud_recent_vehicle": {
+        "name": "Recent vehicle notification"
+      },
+      "cloud_recent_motion": {
+        "name": "Recent motion notification"
+      },
+      "cloud_recent_audio": {
+        "name": "Recent sound notification"
+      },
+      "cloud_recent_baby_cry": {
+        "name": "Recent baby crying notification"
+      },
+      "cloud_recent_bark": {
+        "name": "Recent barking notification"
+      },
+      "cloud_recent_meow": {
+        "name": "Recent meowing notification"
+      },
+      "cloud_recent_glass_break": {
+        "name": "Recent glass breaking notification"
+      },
+      "cloud_recent_smoke_alarm": {
+        "name": "Recent smoke alarm sound notification"
+      },
+      "cloud_recent_tampering": {
+        "name": "Recent camera tampering notification"
+      },
+      "cloud_recent_intrusion": {
+        "name": "Recent area intrusion notification"
+      },
+      "cloud_recent_line_crossing": {
+        "name": "Recent line crossing notification"
+      },
+      "model": {
+        "name": "Model"
+      },
+      "firmware": {
+        "name": "Firmware"
+      },
+      "hardware": {
+        "name": "Hardware"
+      },
+      "mac": {
+        "name": "MAC address"
+      },
+      "ip_address": {
+        "name": "IP address"
+      },
+      "device_id": {
+        "name": "Device ID"
+      },
+      "connection_type": {
+        "name": "Connection type"
+      },
+      "wifi_signal": {
+        "name": "Wi-Fi signal"
+      },
+      "signal_level": {
+        "name": "Wi-Fi signal level"
+      },
+      "sd_card": {
+        "name": "SD card"
+      },
+      "last_alarm_type": {
+        "name": "Last alarm code"
+      },
+      "last_alarm_at": {
+        "name": "Last alarm time"
+      },
+      "face_api_status": {
+        "name": "Face API status"
+      },
+      "face_count": {
+        "name": "Face catalog count"
+      },
+      "last_face_id": {
+        "name": "Last face ID"
+      },
+      "last_face_name": {
+        "name": "Last recognized face"
+      },
+      "last_face_tag": {
+        "name": "Last face tag"
+      },
+      "last_recognized_at": {
+        "name": "Last recognized at"
+      },
+      "face_last_seen": {
+        "name": "Face {face_id} last seen"
+      },
+      "face_name": {
+        "name": "Face {face_id} name"
+      },
+      "cloud_face_name": {
+        "name": "Last person reported by Tapo"
+      },
+      "cloud_face_time": {
+        "name": "Last face notification time"
+      },
+      "cloud_face_type": {
+        "name": "Last face notification type"
+      },
+      "cloud_person_time": {
+        "name": "Last recognition notification for {person}"
+      },
+      "face_image": {
+        "name": "Face {face_id} image"
+      },
+      "stream": {
+        "name": "Live stream"
+      },
+      "sub_stream": {
+        "name": "Low bandwidth stream"
+      },
+      "status_led": {
+        "name": "Status LED"
+      },
+      "led": {
+        "name": "Status LED enabled"
+      },
+      "privacy_mode": {
+        "name": "Privacy mode"
+      },
+      "lens_cover": {
+        "name": "Lens covered"
+      },
+      "recording": {
+        "name": "Recording schedule enabled"
+      },
+      "recording_loop": {
+        "name": "Loop recording"
+      },
+      "record_audio": {
+        "name": "Record audio"
+      },
+      "microphone_mute": {
+        "name": "Mute microphone"
+      },
+      "noise_cancelling": {
+        "name": "Microphone noise reduction"
+      },
+      "speaker_volume": {
+        "name": "Speaker volume"
+      },
+      "microphone_volume": {
+        "name": "Microphone volume"
+      },
+      "day_night_mode": {
+        "name": "Day/night mode"
+      },
+      "light_frequency": {
+        "name": "Anti-flicker frequency"
+      },
+      "image_flip": {
+        "name": "Rotate image 180 degrees"
+      },
+      "lens_correction": {
+        "name": "Lens distortion correction"
+      },
+      "white_lamp": {
+        "name": "White lamp"
+      },
+      "auto_tracking": {
+        "name": "Automatic tracking"
+      },
+      "privacy_zones": {
+        "name": "Privacy masking zones"
+      },
+      "notifications": {
+        "name": "Tapo notifications"
+      },
+      "rich_notifications": {
+        "name": "Tapo rich notifications"
+      },
+      "preset": {
+        "name": "Go to PTZ preset"
+      },
+      "ptz_stop": {
+        "name": "Stop PTZ"
+      },
+      "ptz_left": {
+        "name": "Pan left one step"
+      },
+      "ptz_right": {
+        "name": "Pan right one step"
+      },
+      "ptz_up": {
+        "name": "Tilt up one step"
+      },
+      "ptz_down": {
+        "name": "Tilt down one step"
+      },
+      "ptz_calibrate": {
+        "name": "Calibrate PTZ"
+      },
+      "cruise_horizontal": {
+        "name": "Start horizontal cruise"
+      },
+      "cruise_vertical": {
+        "name": "Start vertical cruise"
+      },
+      "cruise_stop": {
+        "name": "Stop cruise"
+      },
+      "manual_alarm_start": {
+        "name": "Sound manual alarm"
+      },
+      "manual_alarm_stop": {
+        "name": "Stop manual alarm"
+      },
+      "refresh": {
+        "name": "Refresh camera data"
+      },
+      "cloud_refresh": {
+        "name": "Check Tapo notifications now"
+      },
+      "reboot": {
+        "name": "Reboot camera"
+      },
+      "motion_detection_enabled": {
+        "name": "Motion detection"
+      },
+      "motion_detection_sensitivity": {
+        "name": "Motion detection sensitivity"
+      },
+      "motion_detection_digital_sensitivity": {
+        "name": "Motion detection sensitivity"
+      },
+      "people_detection_enabled": {
+        "name": "Person detection"
+      },
+      "people_detection_sensitivity": {
+        "name": "Person detection sensitivity"
+      },
+      "people_detection_digital_sensitivity": {
+        "name": "Person detection sensitivity"
+      },
+      "pet_detection_enabled": {
+        "name": "Pet detection"
+      },
+      "pet_detection_sensitivity": {
+        "name": "Pet detection sensitivity"
+      },
+      "pet_detection_digital_sensitivity": {
+        "name": "Pet detection sensitivity"
+      },
+      "vehicle_detection_enabled": {
+        "name": "Vehicle detection"
+      },
+      "vehicle_detection_sensitivity": {
+        "name": "Vehicle detection sensitivity"
+      },
+      "vehicle_detection_digital_sensitivity": {
+        "name": "Vehicle detection sensitivity"
+      },
+      "bark_detection_enabled": {
+        "name": "Bark detection"
+      },
+      "bark_detection_sensitivity": {
+        "name": "Bark detection sensitivity"
+      },
+      "bark_detection_digital_sensitivity": {
+        "name": "Bark detection sensitivity"
+      },
+      "meow_detection_enabled": {
+        "name": "Meow detection"
+      },
+      "meow_detection_sensitivity": {
+        "name": "Meow detection sensitivity"
+      },
+      "meow_detection_digital_sensitivity": {
+        "name": "Meow detection sensitivity"
+      },
+      "glass_detection_enabled": {
+        "name": "Glass-break detection"
+      },
+      "glass_detection_sensitivity": {
+        "name": "Glass-break detection sensitivity"
+      },
+      "glass_detection_digital_sensitivity": {
+        "name": "Glass-break detection sensitivity"
+      },
+      "tamper_detection_enabled": {
+        "name": "Tamper detection"
+      },
+      "tamper_detection_sensitivity": {
+        "name": "Tamper detection sensitivity"
+      },
+      "tamper_detection_digital_sensitivity": {
+        "name": "Tamper detection sensitivity"
+      },
+      "sound_detection_enabled": {
+        "name": "Baby-cry detection"
+      },
+      "sound_detection_sensitivity": {
+        "name": "Baby-cry detection sensitivity"
+      },
+      "sound_detection_digital_sensitivity": {
+        "name": "Baby-cry detection sensitivity"
+      },
+      "linecrossing_detection_enabled": {
+        "name": "Line-crossing detection"
+      },
+      "linecrossing_detection_sensitivity": {
+        "name": "Line-crossing detection sensitivity"
+      },
+      "linecrossing_detection_digital_sensitivity": {
+        "name": "Line-crossing detection sensitivity"
+      },
+      "intrusion_detection_enabled": {
+        "name": "Intrusion detection"
+      },
+      "intrusion_detection_sensitivity": {
+        "name": "Intrusion detection sensitivity"
+      },
+      "intrusion_detection_digital_sensitivity": {
+        "name": "Intrusion detection sensitivity"
+      },
+      "face_detection_enabled": {
+        "name": "Face recognition"
+      },
+      "face_detection_sensitivity": {
+        "name": "Face recognition sensitivity"
+      },
+      "face_detection_digital_sensitivity": {
+        "name": "Face recognition sensitivity"
+      },
+      "smart_tracking_people": {
+        "name": "Track people"
+      },
+      "smart_tracking_pet": {
+        "name": "Track pets"
+      },
+      "smart_tracking_vehicle": {
+        "name": "Track vehicles"
+      },
+      "smart_tracking_baby": {
+        "name": "Track babies"
+      },
+      "recording_monday": {
+        "name": "Monday recording periods"
+      },
+      "recording_tuesday": {
+        "name": "Tuesday recording periods"
+      },
+      "recording_wednesday": {
+        "name": "Wednesday recording periods"
+      },
+      "recording_thursday": {
+        "name": "Thursday recording periods"
+      },
+      "recording_friday": {
+        "name": "Friday recording periods"
+      },
+      "recording_saturday": {
+        "name": "Saturday recording periods"
+      },
+      "recording_sunday": {
+        "name": "Sunday recording periods"
+      },
+      "sd_status": {
+        "name": "SD {card} status"
+      },
+      "sd_capacity": {
+        "name": "SD {card} capacity"
+      },
+      "sd_free": {
+        "name": "SD {card} free"
+      },
+      "sd_used": {
+        "name": "SD {card} used"
+      },
+      "sd_total": {
+        "name": "SD {card} total"
+      },
+      "sd_percent": {
+        "name": "SD {card} percent"
+      },
+      "sd_free_space": {
+        "name": "SD {card} free space"
+      },
+      "sd_total_space": {
+        "name": "SD {card} total space"
+      }
+    },
+    "switch": {
+      "status_led": {
+        "name": "Status LED"
+      },
+      "privacy_mode": {
+        "name": "Privacy mode"
+      },
+      "recording": {
+        "name": "Recording schedule enabled"
+      },
+      "recording_loop": {
+        "name": "Loop recording"
+      },
+      "record_audio": {
+        "name": "Record audio"
+      },
+      "microphone_mute": {
+        "name": "Mute microphone"
+      },
+      "noise_cancelling": {
+        "name": "Microphone noise reduction"
+      },
+      "image_flip": {
+        "name": "Rotate image 180 degrees"
+      },
+      "lens_correction": {
+        "name": "Lens distortion correction"
+      },
+      "white_lamp": {
+        "name": "White lamp"
+      },
+      "auto_tracking": {
+        "name": "Automatic tracking"
+      },
+      "privacy_zones": {
+        "name": "Privacy masking zones"
+      },
+      "notifications": {
+        "name": "Tapo notifications"
+      },
+      "rich_notifications": {
+        "name": "Tapo rich notifications"
+      },
+      "motion_detection_enabled": {
+        "name": "Motion detection"
+      },
+      "people_detection_enabled": {
+        "name": "Person detection"
+      },
+      "pet_detection_enabled": {
+        "name": "Pet detection"
+      },
+      "vehicle_detection_enabled": {
+        "name": "Vehicle detection"
+      },
+      "bark_detection_enabled": {
+        "name": "Bark detection"
+      },
+      "meow_detection_enabled": {
+        "name": "Meow detection"
+      },
+      "glass_detection_enabled": {
+        "name": "Glass-break detection"
+      },
+      "tamper_detection_enabled": {
+        "name": "Tamper detection"
+      },
+      "sound_detection_enabled": {
+        "name": "Baby-cry detection"
+      },
+      "linecrossing_detection_enabled": {
+        "name": "Line-crossing detection"
+      },
+      "intrusion_detection_enabled": {
+        "name": "Intrusion detection"
+      },
+      "face_detection_enabled": {
+        "name": "Face recognition"
+      },
+      "smart_tracking_people": {
+        "name": "Track people"
+      },
+      "smart_tracking_pet": {
+        "name": "Track pets"
+      },
+      "smart_tracking_vehicle": {
+        "name": "Track vehicles"
+      },
+      "smart_tracking_baby": {
+        "name": "Track babies"
+      }
+    },
+    "number": {
+      "speaker_volume": {
+        "name": "Speaker volume"
+      },
+      "microphone_volume": {
+        "name": "Microphone volume"
+      },
+      "motion_detection_digital_sensitivity": {
+        "name": "Motion detection sensitivity"
+      },
+      "people_detection_sensitivity": {
+        "name": "Person detection sensitivity"
+      },
+      "pet_detection_sensitivity": {
+        "name": "Pet detection sensitivity"
+      },
+      "vehicle_detection_sensitivity": {
+        "name": "Vehicle detection sensitivity"
+      },
+      "bark_detection_sensitivity": {
+        "name": "Bark detection sensitivity"
+      },
+      "meow_detection_sensitivity": {
+        "name": "Meow detection sensitivity"
+      },
+      "glass_detection_sensitivity": {
+        "name": "Glass-break detection sensitivity"
+      }
+    },
+    "select": {
+      "day_night_mode": {
+        "name": "Day/night mode",
+        "state": {
+          "auto": "Automatic",
+          "on": "Night (infrared)",
+          "off": "Day (color)"
+        }
+      },
+      "light_frequency": {
+        "name": "Anti-flicker frequency",
+        "state": {
+          "auto": "Automatic",
+          "50": "50 Hz",
+          "60": "60 Hz"
+        }
+      },
+      "tamper_detection_sensitivity": {
+        "name": "Tamper detection sensitivity",
+        "state": {
+          "low": "Low",
+          "medium": "Medium",
+          "high": "High"
+        }
+      },
+      "sound_detection_sensitivity": {
+        "name": "Baby-cry detection sensitivity",
+        "state": {
+          "low": "Low",
+          "medium": "Medium",
+          "high": "High"
+        }
+      },
+      "preset": {
+        "name": "Go to PTZ preset"
+      }
+    },
+    "text": {
+      "recording_monday": {
+        "name": "Monday recording periods"
+      },
+      "recording_tuesday": {
+        "name": "Tuesday recording periods"
+      },
+      "recording_wednesday": {
+        "name": "Wednesday recording periods"
+      },
+      "recording_thursday": {
+        "name": "Thursday recording periods"
+      },
+      "recording_friday": {
+        "name": "Friday recording periods"
+      },
+      "recording_saturday": {
+        "name": "Saturday recording periods"
+      },
+      "recording_sunday": {
+        "name": "Sunday recording periods"
+      }
+    },
+    "button": {
+      "reboot": {
+        "name": "Reboot camera"
+      },
+      "ptz_stop": {
+        "name": "Stop PTZ"
+      },
+      "ptz_left": {
+        "name": "Pan left one step"
+      },
+      "ptz_right": {
+        "name": "Pan right one step"
+      },
+      "ptz_up": {
+        "name": "Tilt up one step"
+      },
+      "ptz_down": {
+        "name": "Tilt down one step"
+      },
+      "ptz_calibrate": {
+        "name": "Calibrate PTZ"
+      },
+      "cruise_horizontal": {
+        "name": "Start horizontal cruise"
+      },
+      "cruise_vertical": {
+        "name": "Start vertical cruise"
+      },
+      "cruise_stop": {
+        "name": "Stop cruise"
+      },
+      "manual_alarm_start": {
+        "name": "Sound manual alarm"
+      },
+      "manual_alarm_stop": {
+        "name": "Stop manual alarm"
+      },
+      "refresh": {
+        "name": "Refresh camera data"
+      },
+      "cloud_refresh": {
+        "name": "Check Tapo notifications now"
+      }
+    },
+    "camera": {
+      "stream": {
+        "name": "Live stream"
+      },
+      "sub_stream": {
+        "name": "Low bandwidth stream"
+      }
+    },
+    "image": {
+      "face_image": {
+        "name": "Face {face_id} image"
+      }
+    }
+  },
+  "selector": {
+    "auth_mode": {
+      "options": {
+        "tapo_account": "Tapo / TP-Link account (admin)",
+        "camera_account": "Camera Account (local account)"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Polling and video",
+        "description": "Poll camera settings every 5–300 seconds. Empty URL disables that stream; omit it to retain it. RTSP uses a separate Camera Account, not the Tapo password.",
+        "data": {
+          "scan_interval": "Polling interval (seconds)",
+          "stream_url": "Main RTSP URL (optional)",
+          "sub_stream_url": "Secondary RTSP URL (optional)"
+        }
+      },
+      "cloud_notifications": {
+        "title": "Cloud notification polling",
+        "description": "Notification polling interval (5–300 seconds). Default 5 seconds; after 10 quiet minutes polling relaxes to at least 30 seconds. Camera settings sync separately every 30 seconds. This is polling, not realtime push; camera and TP-Link add latency. Refresh buttons check notifications or settings immediately. Reconfigure to sign in again.",
+        "data": {
+          "scan_interval": "Check every (seconds)"
+        }
+      },
+      "license": {
+        "title": "Tapo Connect license",
+        "description": "No key yet? [Register, get a free 1-day trial or buy a license]({license_url}). One key binds one custom entry in HA. Paid duration starts on first activation; trial starts when issued. Paste the key below. Tapo credentials are never sent to the license server.",
+        "data": {
+          "license_key": "License Key"
+        }
+      },
+      "camera_options": {
+        "title": "Polling and video",
+        "description": "Poll camera settings every 5–300 seconds. Empty URL disables that stream; omit it to retain it. RTSP uses a separate Camera Account, not the Tapo password.",
+        "data": {
+          "scan_interval": "Polling interval (seconds)",
+          "stream_url": "Main RTSP URL (optional)",
+          "sub_stream_url": "Secondary RTSP URL (optional)"
+        }
+      },
+      "license_menu": {
+        "title": "Camera and license",
+        "menu_options": {
+          "license": "License / activate key",
+          "camera_options": "Existing camera settings"
+        }
+      }
+    },
+    "error": {
+      "invalid_input": "Check the polling interval and RTSP URLs.",
+      "license_unavailable": "License server unavailable. Try again; existing camera credentials are unchanged.",
+      "license_rejected": "Invalid, expired, blocked or already bound key. Check the dashboard or contact your administrator."
+    },
+    "abort": {
+      "license_configuration": "The publisher must configure the HTTPS license server and public signing key first."
+    }
+  }
+}

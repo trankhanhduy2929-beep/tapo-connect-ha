@@ -1,0 +1,1367 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Đăng nhập tài khoản Tapo",
+        "description": "Home Assistant đọc thông báo nhận diện từ tài khoản Tapo: nhập email và mật khẩu dùng trong ứng dụng Tapo, nhập mã gửi qua email nếu Tapo yêu cầu, rồi chọn camera. Đã bỏ tùy chọn đăng nhập local độc lập; entry local cũ vẫn chạy."
+      },
+      "tapo_control": {
+        "title": "Dùng Tapo Control đang có",
+        "description": "Chọn C260 đã hoạt động trong Tapo: Cameras Control. Bản bổ sung chỉ đọc sensor, thông tin khuôn mặt và ảnh khuôn mặt thử nghiệm; không sao chép mật khẩu hay đóng kết nối gốc. Giữ Tapo Control được cài và bật.",
+        "data": {
+          "tapo_control_entry_id": "Camera trong Tapo Control"
+        }
+      },
+      "standalone": {
+        "title": "Đăng nhập độc lập",
+        "description": "Đăng nhập cục bộ bằng pytapo, không cần cài Tapo Control trước. Chỉ tạo thực thể cho chức năng camera trả về. API khuôn mặt phụ thuộc firmware. TLS tự ký: chỉ dùng trong mạng LAN tin cậy.",
+        "data": {
+          "host": "IP hoặc hostname camera",
+          "port": "Cổng điều khiển HTTPS",
+          "auth_mode": "Loại tài khoản",
+          "username": "Tên Camera Account (bỏ qua khi chọn tài khoản Tapo)",
+          "password": "Mật khẩu của loại tài khoản đã chọn",
+          "name": "Tên camera",
+          "stream_url": "URL RTSP (tùy chọn, tài khoản riêng)"
+        },
+        "data_description": {
+          "auth_mode": "Tài khoản Tapo: dùng mật khẩu đăng nhập ứng dụng Tapo; API dùng tên admin, không dùng email. Camera Account: dùng tài khoản tạo trong cài đặt camera nếu firmware chấp nhận.",
+          "username": "Chỉ dùng khi chọn Camera Account. Chế độ tài khoản Tapo luôn dùng admin.",
+          "password": "Chỉ gửi tới camera trong LAN, không gọi API đăng nhập cloud. HA lưu trong config entry; hãy bảo vệ cấu hình và bản sao lưu.",
+          "stream_url": "RTSP dùng Camera Account, không dùng mật khẩu Tapo. Khi cấu hình lại: không gửi trường này để giữ URL cũ; gửi giá trị rỗng để bỏ URL."
+        }
+      },
+      "reconfigure": {
+        "title": "Chuyển sang / cấu hình lại đăng nhập độc lập",
+        "description": "Đăng nhập cục bộ bằng pytapo, không cần cài Tapo Control trước. Chỉ tạo thực thể cho chức năng camera trả về. API khuôn mặt phụ thuộc firmware. TLS tự ký: chỉ dùng trong mạng LAN tin cậy.",
+        "data": {
+          "host": "IP hoặc hostname camera",
+          "port": "Cổng điều khiển HTTPS",
+          "auth_mode": "Loại tài khoản",
+          "username": "Tên Camera Account (bỏ qua khi chọn tài khoản Tapo)",
+          "password": "Mật khẩu của loại tài khoản đã chọn",
+          "name": "Tên camera",
+          "stream_url": "URL RTSP (tùy chọn, tài khoản riêng)"
+        },
+        "data_description": {
+          "auth_mode": "Tài khoản Tapo: dùng mật khẩu đăng nhập ứng dụng Tapo; API dùng tên admin, không dùng email. Camera Account: dùng tài khoản tạo trong cài đặt camera nếu firmware chấp nhận.",
+          "username": "Chỉ dùng khi chọn Camera Account. Chế độ tài khoản Tapo luôn dùng admin.",
+          "password": "Chỉ gửi tới camera trong LAN, không gọi API đăng nhập cloud. HA lưu trong config entry; hãy bảo vệ cấu hình và bản sao lưu.",
+          "stream_url": "RTSP dùng Camera Account, không dùng mật khẩu Tapo. Khi cấu hình lại: không gửi trường này để giữ URL cũ; gửi giá trị rỗng để bỏ URL."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Đăng nhập lại camera",
+        "description": "Đăng nhập cục bộ bằng pytapo, không cần cài Tapo Control trước. Chỉ tạo thực thể cho chức năng camera trả về. API khuôn mặt phụ thuộc firmware. TLS tự ký: chỉ dùng trong mạng LAN tin cậy.",
+        "data": {
+          "host": "IP hoặc hostname camera",
+          "port": "Cổng điều khiển HTTPS",
+          "auth_mode": "Loại tài khoản",
+          "username": "Tên Camera Account (bỏ qua khi chọn tài khoản Tapo)",
+          "password": "Mật khẩu của loại tài khoản đã chọn",
+          "name": "Tên camera",
+          "stream_url": "URL RTSP (tùy chọn, tài khoản riêng)"
+        },
+        "data_description": {
+          "auth_mode": "Tài khoản Tapo: dùng mật khẩu đăng nhập ứng dụng Tapo; API dùng tên admin, không dùng email. Camera Account: dùng tài khoản tạo trong cài đặt camera nếu firmware chấp nhận.",
+          "username": "Chỉ dùng khi chọn Camera Account. Chế độ tài khoản Tapo luôn dùng admin.",
+          "password": "Chỉ gửi tới camera trong LAN, không gọi API đăng nhập cloud. HA lưu trong config entry; hãy bảo vệ cấu hình và bản sao lưu.",
+          "stream_url": "RTSP dùng Camera Account, không dùng mật khẩu Tapo. Khi cấu hình lại: không gửi trường này để giữ URL cũ; gửi giá trị rỗng để bỏ URL."
+        }
+      },
+      "cloud_login": {
+        "title": "Đăng nhập tài khoản Tapo",
+        "description": "Dùng tài khoản đăng nhập ứng dụng Tapo, không phải tài khoản HA hoặc Camera Account. Không cần file JSON hay Tapo Control. Bấm Tiếp tục cho phép gửi một email xác minh nếu Tapo yêu cầu MFA. Không lưu mật khẩu/OTP; HA tự lưu phiên riêng, hãy bảo vệ HA và backup. Mã quốc gia tùy chọn, ví dụ VN.",
+        "data": {
+          "email": "Email tài khoản Tapo",
+          "password": "Mật khẩu Tapo",
+          "region": "Mã quốc gia (tùy chọn)"
+        }
+      },
+      "cloud_mfa": {
+        "title": "Mã xác minh email Tapo",
+        "description": "Nhập mã 6 chữ số gửi đến email Tapo, giữ nguyên số 0 ở đầu. Không chia sẻ mã. Chỉ gửi xác minh một lần; nếu mã bị từ chối hoặc hết hạn, bắt đầu đăng nhập lại. Không tắt MFA hoặc đánh dấu máy này là thiết bị tin cậy.",
+        "data": {
+          "code": "Mã xác minh 6 chữ số"
+        }
+      },
+      "cloud_device": {
+        "title": "Chọn camera của bạn",
+        "description": "Chọn C260 trong tài khoản. HA giữ sensor tên/thời điểm và thêm thông báo người, người lạ, vật nuôi, xe, âm thanh cùng setting qua cloud. Thông báo mặc định 5 giây (giãn 30 giây khi yên lặng); setting đồng bộ độc lập mỗi 30 giây. Không cần local hoặc Tapo Control; chưa có ảnh/video cloud.",
+        "data": {
+          "camera_id": "Camera"
+        }
+      },
+      "license": {
+        "title": "License Tapo Connect",
+        "description": "Chưa có key? [Đăng ký, nhận TEST 1 ngày miễn phí hoặc mua license]({license_url}). Một key chỉ gắn một entry custom trong HA. Gói trả phí tính từ kích hoạt đầu; trial tính ngay khi cấp. Dán key bên dưới. Không gửi tài khoản, mật khẩu hay dữ liệu camera Tapo lên server license.",
+        "data": {
+          "license_key": "License Key"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Lỗi kết nối, TLS hoặc phiên giao tiếp; không nhất thiết là lỗi mạng. Nếu Tapo Control hoạt động, hãy chọn dùng kết nối đang có.",
+      "unexpected_response": "Camera đã trả lời nhưng định dạng response chưa phù hợp. Xem log tapo_camera_local đã lọc thông tin nhạy cảm; không kết luận do firewall.",
+      "request_rejected": "Camera từ chối truy vấn thông tin cơ bản. Xem tên method và mã lỗi trong log tapo_camera_local.",
+      "source_not_ready": "Tapo Control chưa sẵn sàng hoặc yêu cầu bị từ chối. Kết nối hoặc tải lại Tapo Control trước, giữ nó được bật rồi thử lại. Không nhập mật khẩu ở đây.",
+      "invalid_auth": "Camera từ chối hoặc tạm khóa đăng nhập. Kiểm tra tài khoản API; không thử nhiều mật khẩu liên tục.",
+      "unknown": "Lỗi chưa xác định. Xem log tapo_camera_local; không chia sẻ mật khẩu hoặc log payload thô.",
+      "invalid_input": "Kiểm tra IP, cổng, loại tài khoản và mật khẩu không được rỗng.",
+      "cloud_auth": "Phiên cloud bị từ chối. Cập nhật hồ sơ MFA đã xác minh của chủ tài khoản.",
+      "cloud_profile": "Không đọc được hồ sơ riêng hoặc cloud. Kiểm tra quyền file, mạng và phiên đăng nhập.",
+      "cloud_app_invalid": "Thiếu hoặc hỏng cấu hình giao thức đi kèm. Cài lại đầy đủ integration.",
+      "cloud_invalid_auth": "Tapo từ chối tài khoản. Kiểm tra email/mật khẩu, không thử lặp liên tục.",
+      "cloud_locked": "Tài khoản tạm khóa hoặc bị giới hạn yêu cầu. Chờ trước khi đăng nhập lại.",
+      "cloud_invalid_input": "Kiểm tra email, mật khẩu và mã quốc gia hai chữ cái nếu có.",
+      "cloud_mfa_unsupported": "Tài khoản yêu cầu phương thức xác minh chưa hỗ trợ. Kiểm tra ứng dụng Tapo.",
+      "cloud_mfa_expired": "Mã xác minh đã hết thời gian chờ. Bắt đầu đăng nhập lại để nhận mã mới.",
+      "cloud_invalid_code": "Nhập đúng mã 6 chữ số. Nếu Tapo đã từ chối mã, hãy bắt đầu đăng nhập lại.",
+      "cloud_restart_login": "Phiên cần xác minh lại. Bắt đầu đăng nhập lại; không cần file JSON.",
+      "cloud_cannot_connect": "Không đọc được phản hồi Tapo cloud. Không tự gửi lại mật khẩu hoặc yêu cầu mã.",
+      "cloud_bad_response": "Tapo trả dữ liệu chưa hỗ trợ. Kiểm tra chẩn đoán, không chia sẻ thông tin đăng nhập.",
+      "cloud_bad_request": "Thao tác cloud này không được cho phép.",
+      "cloud_busy": "Yêu cầu đăng nhập đang xử lý. Vui lòng chờ, không bấm gửi lại.",
+      "cloud_no_devices": "Không tìm thấy C260 được hỗ trợ trong tài khoản này.",
+      "cloud_invalid_device": "Chọn camera có trong danh sách tài khoản của bạn.",
+      "cloud_storage": "HA không lưu được phiên riêng. Kiểm tra dung lượng/quyền config rồi thử lại bước chọn camera.",
+      "license_unavailable": "Server license tạm thời không phản hồi. Thử lại; tài khoản camera cũ được giữ nguyên.",
+      "license_rejected": "Key không hợp lệ, hết hạn, bị khóa hoặc đã gắn bản cài khác. Kiểm tra dashboard hoặc liên hệ admin."
+    },
+    "abort": {
+      "already_configured": "Camera đã được thêm với kiểu kết nối này. Dùng Cấu hình lại trên entry hiện có.",
+      "no_tapo_control": "Không có Tapo Control để liên kết. Quay lại và chọn Đăng nhập độc lập.",
+      "wrong_device": "Camera hoặc hồ sơ cloud thuộc thiết bị khác. Cấu hình cũ được giữ nguyên.",
+      "source_reauth": "Đăng nhập lại trong Tapo Control, hoặc dùng Cấu hình lại để chuyển sang đăng nhập độc lập.",
+      "reconfigure_successful": "Đã lưu cấu hình; Home Assistant đang tải lại entry.",
+      "reauth_successful": "Đã cập nhật thông tin đăng nhập; Home Assistant đang tải lại entry.",
+      "cloud_app_invalid": "Thiếu hoặc hỏng cấu hình giao thức đi kèm. Cài lại đầy đủ integration.",
+      "cloud_invalid_auth": "Tapo từ chối tài khoản. Kiểm tra email/mật khẩu, không thử lặp liên tục.",
+      "cloud_locked": "Tài khoản tạm khóa hoặc bị giới hạn yêu cầu. Chờ trước khi đăng nhập lại.",
+      "cloud_invalid_input": "Kiểm tra email, mật khẩu và mã quốc gia hai chữ cái nếu có.",
+      "cloud_mfa_unsupported": "Tài khoản yêu cầu phương thức xác minh chưa hỗ trợ. Kiểm tra ứng dụng Tapo.",
+      "cloud_mfa_expired": "Mã xác minh đã hết thời gian chờ. Bắt đầu đăng nhập lại để nhận mã mới.",
+      "cloud_invalid_code": "Nhập đúng mã 6 chữ số. Nếu Tapo đã từ chối mã, hãy bắt đầu đăng nhập lại.",
+      "cloud_restart_login": "Phiên cần xác minh lại. Bắt đầu đăng nhập lại; không cần file JSON.",
+      "cloud_cannot_connect": "Không đọc được phản hồi Tapo cloud. Không tự gửi lại mật khẩu hoặc yêu cầu mã.",
+      "cloud_bad_response": "Tapo trả dữ liệu chưa hỗ trợ. Kiểm tra chẩn đoán, không chia sẻ thông tin đăng nhập.",
+      "cloud_bad_request": "Thao tác cloud này không được cho phép.",
+      "cloud_busy": "Yêu cầu đăng nhập đang xử lý. Vui lòng chờ, không bấm gửi lại.",
+      "cloud_no_devices": "Không tìm thấy C260 được hỗ trợ trong tài khoản này.",
+      "cloud_invalid_device": "Chọn camera có trong danh sách tài khoản của bạn.",
+      "cloud_storage": "HA không lưu được phiên riêng. Kiểm tra dung lượng/quyền config rồi thử lại bước chọn camera.",
+      "license_configuration": "Nhà phát hành cần cấu hình server license HTTPS và public key trước.",
+      "license_required": "Bắt đầu lại từ Thêm tích hợp và kích hoạt license trước.",
+      "license_in_use": "Key này đã gắn một entry custom khác trong HA này.",
+      "license_flow_in_progress": "Hoàn tất hoặc hủy flow nhập license đang mở trước khi thêm camera khác."
+    }
+  },
+  "selector": {
+    "auth_mode": {
+      "options": {
+        "tapo_account": "Tài khoản Tapo / TP-Link (admin)",
+        "camera_account": "Camera Account (tài khoản cục bộ)"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Đồng bộ và video",
+        "description": "Đọc trạng thái camera mỗi 5–300 giây. URL rỗng sẽ tắt luồng tương ứng; bỏ qua để giữ URL cũ. RTSP dùng Tài khoản camera riêng, không dùng mật khẩu Tapo.",
+        "data": {
+          "scan_interval": "Chu kỳ đồng bộ (giây)",
+          "stream_url": "URL RTSP chất lượng cao (tùy chọn)",
+          "sub_stream_url": "URL RTSP tiết kiệm băng thông (tùy chọn)"
+        }
+      },
+      "cloud_notifications": {
+        "title": "Chu kỳ đọc thông báo cloud",
+        "description": "Chọn chu kỳ đọc thông báo (5–300 giây). Mặc định 5 giây; sau 10 phút yên lặng giãn ít nhất 30 giây. Setting camera đọc riêng mỗi 30 giây. Đây là polling, không phải push realtime; độ trễ còn tùy camera và TP-Link. Hai nút làm mới đọc ngay thông báo hoặc setting. Cấu hình lại để đăng nhập lại.",
+        "data": {
+          "scan_interval": "Kiểm tra mỗi (giây)"
+        }
+      },
+      "license": {
+        "title": "License Tapo Connect",
+        "description": "Chưa có key? [Đăng ký, nhận TEST 1 ngày miễn phí hoặc mua license]({license_url}). Một key chỉ gắn một entry custom trong HA. Gói trả phí tính từ kích hoạt đầu; trial tính ngay khi cấp. Dán key bên dưới. Không gửi tài khoản, mật khẩu hay dữ liệu camera Tapo lên server license.",
+        "data": {
+          "license_key": "License Key"
+        }
+      },
+      "camera_options": {
+        "title": "Đồng bộ và video",
+        "description": "Đọc trạng thái camera mỗi 5–300 giây. URL rỗng sẽ tắt luồng tương ứng; bỏ qua để giữ URL cũ. RTSP dùng Tài khoản camera riêng, không dùng mật khẩu Tapo.",
+        "data": {
+          "scan_interval": "Chu kỳ đồng bộ (giây)",
+          "stream_url": "URL RTSP chất lượng cao (tùy chọn)",
+          "sub_stream_url": "URL RTSP tiết kiệm băng thông (tùy chọn)"
+        }
+      },
+      "license_menu": {
+        "title": "Camera và license",
+        "menu_options": {
+          "license": "License / kích hoạt key",
+          "camera_options": "Thiết lập camera hiện có"
+        }
+      }
+    },
+    "error": {
+      "invalid_input": "Kiểm tra chu kỳ đồng bộ và URL RTSP.",
+      "license_unavailable": "Server license tạm thời không phản hồi. Thử lại; tài khoản camera cũ được giữ nguyên.",
+      "license_rejected": "Key không hợp lệ, hết hạn, bị khóa hoặc đã gắn bản cài khác. Kiểm tra dashboard hoặc liên hệ admin."
+    },
+    "abort": {
+      "license_configuration": "Nhà phát hành cần cấu hình server license HTTPS và public key trước."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "cloud_notification_familiar": {
+        "name": "Thời điểm thông báo: Người quen"
+      },
+      "cloud_notification_stranger": {
+        "name": "Thời điểm thông báo: Người lạ"
+      },
+      "cloud_notification_person": {
+        "name": "Thời điểm thông báo: Người"
+      },
+      "cloud_notification_pet": {
+        "name": "Thời điểm thông báo: Vật nuôi"
+      },
+      "cloud_notification_vehicle": {
+        "name": "Thời điểm thông báo: Xe cộ"
+      },
+      "cloud_notification_motion": {
+        "name": "Thời điểm thông báo: Chuyển động"
+      },
+      "cloud_notification_audio": {
+        "name": "Thời điểm thông báo: Âm thanh"
+      },
+      "cloud_notification_baby_cry": {
+        "name": "Thời điểm thông báo: Tiếng trẻ khóc"
+      },
+      "cloud_notification_bark": {
+        "name": "Thời điểm thông báo: Tiếng chó sủa"
+      },
+      "cloud_notification_meow": {
+        "name": "Thời điểm thông báo: Tiếng mèo kêu"
+      },
+      "cloud_notification_glass_break": {
+        "name": "Thời điểm thông báo: Tiếng kính vỡ"
+      },
+      "cloud_notification_smoke_alarm": {
+        "name": "Thời điểm thông báo: Tiếng còi báo khói"
+      },
+      "cloud_notification_tampering": {
+        "name": "Thời điểm thông báo: Camera bị che hoặc can thiệp"
+      },
+      "cloud_notification_intrusion": {
+        "name": "Thời điểm thông báo: Xâm nhập vùng"
+      },
+      "cloud_notification_line_crossing": {
+        "name": "Thời điểm thông báo: Vượt hàng rào"
+      },
+      "cloud_notification_loitering": {
+        "name": "Thời điểm thông báo: Lảng vảng"
+      },
+      "cloud_notification_package_delivered": {
+        "name": "Thời điểm thông báo: Giao bưu kiện"
+      },
+      "cloud_notification_package_removed": {
+        "name": "Thời điểm thông báo: Lấy bưu kiện"
+      },
+      "cloud_notification_anti_theft": {
+        "name": "Thời điểm thông báo: Cảnh báo chống trộm"
+      },
+      "cloud_notification_doorbell": {
+        "name": "Thời điểm thông báo: Nhấn chuông"
+      },
+      "cloud_notification_missed_doorbell": {
+        "name": "Thời điểm thông báo: Chuông cửa bị bỏ lỡ"
+      },
+      "cloud_notification_sd_uninitialized": {
+        "name": "Thời điểm thông báo: Thẻ nhớ chưa khởi tạo"
+      },
+      "cloud_notification_sd_full": {
+        "name": "Thời điểm thông báo: Thẻ nhớ gần đầy"
+      },
+      "cloud_notification_disk_uninitialized": {
+        "name": "Thời điểm thông báo: Ổ đĩa chưa khởi tạo"
+      },
+      "cloud_notification_disk_full": {
+        "name": "Thời điểm thông báo: Ổ đĩa gần đầy"
+      },
+      "cloud_notification_sd_encryption_disabled": {
+        "name": "Thời điểm thông báo: Mã hóa thẻ nhớ bị tắt"
+      },
+      "cloud_notification_sd_decryption_failed": {
+        "name": "Thời điểm thông báo: Giải mã thẻ nhớ thất bại"
+      },
+      "cloud_notification_low_battery": {
+        "name": "Thời điểm thông báo: Pin yếu"
+      },
+      "cloud_notification_battery_empty": {
+        "name": "Thời điểm thông báo: Hết pin"
+      },
+      "cloud_notification_battery_charged": {
+        "name": "Thời điểm thông báo: Pin sạc đầy"
+      },
+      "cloud_notification_overheat": {
+        "name": "Thời điểm thông báo: Thiết bị quá nóng"
+      },
+      "cloud_notification_overheat_cleared": {
+        "name": "Thời điểm thông báo: Thiết bị hết quá nóng"
+      },
+      "cloud_notification_new_firmware": {
+        "name": "Thời điểm thông báo: Có firmware mới"
+      },
+      "cloud_notification_multiple_detection": {
+        "name": "Thời điểm thông báo: Nhiều loại phát hiện"
+      },
+      "cloud_notification_latest_time": {
+        "name": "Thời điểm thông báo camera gần nhất"
+      },
+      "cloud_notification_latest_type": {
+        "name": "Loại thông báo camera gần nhất",
+        "state": {
+          "familiar": "Người quen",
+          "stranger": "Người lạ",
+          "person": "Người",
+          "pet": "Vật nuôi",
+          "vehicle": "Xe cộ",
+          "motion": "Chuyển động",
+          "audio": "Âm thanh",
+          "baby_cry": "Tiếng trẻ khóc",
+          "bark": "Tiếng chó sủa",
+          "meow": "Tiếng mèo kêu",
+          "glass_break": "Tiếng kính vỡ",
+          "smoke_alarm": "Tiếng còi báo khói",
+          "tampering": "Camera bị che hoặc can thiệp",
+          "intrusion": "Xâm nhập vùng",
+          "line_crossing": "Vượt hàng rào",
+          "loitering": "Lảng vảng",
+          "package_delivered": "Giao bưu kiện",
+          "package_removed": "Lấy bưu kiện",
+          "anti_theft": "Cảnh báo chống trộm",
+          "doorbell": "Nhấn chuông",
+          "missed_doorbell": "Chuông cửa bị bỏ lỡ",
+          "sd_uninitialized": "Thẻ nhớ chưa khởi tạo",
+          "sd_full": "Thẻ nhớ gần đầy",
+          "disk_uninitialized": "Ổ đĩa chưa khởi tạo",
+          "disk_full": "Ổ đĩa gần đầy",
+          "sd_encryption_disabled": "Mã hóa thẻ nhớ bị tắt",
+          "sd_decryption_failed": "Giải mã thẻ nhớ thất bại",
+          "low_battery": "Pin yếu",
+          "battery_empty": "Hết pin",
+          "battery_charged": "Pin sạc đầy",
+          "overheat": "Thiết bị quá nóng",
+          "overheat_cleared": "Thiết bị hết quá nóng",
+          "new_firmware": "Có firmware mới",
+          "multiple_detection": "Nhiều loại phát hiện"
+        }
+      },
+      "model": {
+        "name": "Mẫu camera"
+      },
+      "firmware": {
+        "name": "Phiên bản phần mềm"
+      },
+      "hardware": {
+        "name": "Phiên bản phần cứng"
+      },
+      "mac": {
+        "name": "Địa chỉ MAC"
+      },
+      "ip_address": {
+        "name": "Địa chỉ IP"
+      },
+      "device_id": {
+        "name": "Mã thiết bị"
+      },
+      "connection_type": {
+        "name": "Kiểu kết nối"
+      },
+      "wifi_signal": {
+        "name": "Tín hiệu Wi-Fi"
+      },
+      "signal_level": {
+        "name": "Mức sóng Wi-Fi"
+      },
+      "sd_card": {
+        "name": "Trạng thái thẻ nhớ"
+      },
+      "last_alarm_type": {
+        "name": "Mã cảnh báo gần nhất"
+      },
+      "last_alarm_at": {
+        "name": "Thời điểm cảnh báo gần nhất"
+      },
+      "face_api_status": {
+        "name": "Trạng thái API khuôn mặt",
+        "state": {
+          "available": "Có danh sách và lịch sử",
+          "events_without_names": "Có sự kiện nhưng chưa có tên",
+          "catalog_only": "Chỉ có danh sách khuôn mặt",
+          "unsupported": "Firmware không hỗ trợ",
+          "rejected": "Camera từ chối yêu cầu",
+          "transient_error": "Lỗi tạm thời",
+          "invalid_response": "Phản hồi chưa đúng định dạng",
+          "not_tested": "Chưa truy vấn"
+        }
+      },
+      "face_count": {
+        "name": "Số khuôn mặt trong danh sách"
+      },
+      "last_face_id": {
+        "name": "Mã khuôn mặt gần nhất"
+      },
+      "last_face_name": {
+        "name": "Tên người nhận diện gần nhất"
+      },
+      "last_face_tag": {
+        "name": "Nhãn khuôn mặt gần nhất"
+      },
+      "last_recognized_at": {
+        "name": "Thời điểm nhận diện gần nhất"
+      },
+      "face_last_seen": {
+        "name": "Lần nhận diện gần nhất của khuôn mặt {face_id}"
+      },
+      "face_name": {
+        "name": "Tên khuôn mặt {face_id}"
+      },
+      "cloud_face_name": {
+        "name": "Người được Tapo báo nhận diện gần nhất"
+      },
+      "cloud_face_time": {
+        "name": "Thời điểm thông báo nhận diện gần nhất"
+      },
+      "cloud_face_type": {
+        "name": "Loại khuôn mặt trong thông báo gần nhất",
+        "state": {
+          "familiar": "Người quen",
+          "stranger": "Người lạ"
+        }
+      },
+      "cloud_person_time": {
+        "name": "Lần Tapo báo nhận diện {person} gần nhất"
+      },
+      "face_image": {
+        "name": "Ảnh khuôn mặt {face_id}"
+      },
+      "stream": {
+        "name": "Video trực tiếp chất lượng cao"
+      },
+      "sub_stream": {
+        "name": "Video trực tiếp tiết kiệm băng thông"
+      },
+      "status_led": {
+        "name": "Đèn LED trạng thái"
+      },
+      "led": {
+        "name": "Đèn LED trạng thái đang bật"
+      },
+      "privacy_mode": {
+        "name": "Chế độ riêng tư"
+      },
+      "lens_cover": {
+        "name": "Ống kính đang được che"
+      },
+      "recording": {
+        "name": "Ghi hình theo lịch"
+      },
+      "recording_loop": {
+        "name": "Ghi đè khi thẻ nhớ đầy"
+      },
+      "record_audio": {
+        "name": "Ghi âm trong video"
+      },
+      "microphone_mute": {
+        "name": "Tắt tiếng micro"
+      },
+      "noise_cancelling": {
+        "name": "Khử nhiễu micro"
+      },
+      "speaker_volume": {
+        "name": "Âm lượng loa"
+      },
+      "microphone_volume": {
+        "name": "Âm lượng micro"
+      },
+      "day_night_mode": {
+        "name": "Chế độ ngày/đêm"
+      },
+      "light_frequency": {
+        "name": "Tần số chống nhấp nháy"
+      },
+      "image_flip": {
+        "name": "Xoay hình 180 độ"
+      },
+      "lens_correction": {
+        "name": "Hiệu chỉnh méo hình"
+      },
+      "white_lamp": {
+        "name": "Đèn chiếu sáng trắng"
+      },
+      "auto_tracking": {
+        "name": "Tự động theo dõi đối tượng"
+      },
+      "privacy_zones": {
+        "name": "Bật vùng che riêng tư"
+      },
+      "notifications": {
+        "name": "Thông báo trên ứng dụng Tapo"
+      },
+      "rich_notifications": {
+        "name": "Thông báo Tapo kèm ảnh"
+      },
+      "preset": {
+        "name": "Chuyển đến vị trí đã lưu"
+      },
+      "ptz_stop": {
+        "name": "Dừng xoay camera"
+      },
+      "ptz_left": {
+        "name": "Xoay trái một bước"
+      },
+      "ptz_right": {
+        "name": "Xoay phải một bước"
+      },
+      "ptz_up": {
+        "name": "Xoay lên một bước"
+      },
+      "ptz_down": {
+        "name": "Xoay xuống một bước"
+      },
+      "ptz_calibrate": {
+        "name": "Hiệu chuẩn xoay camera"
+      },
+      "cruise_horizontal": {
+        "name": "Bắt đầu quét ngang"
+      },
+      "cruise_vertical": {
+        "name": "Bắt đầu quét dọc"
+      },
+      "cruise_stop": {
+        "name": "Dừng quét tuần tra"
+      },
+      "manual_alarm_start": {
+        "name": "Bật cảnh báo thủ công"
+      },
+      "manual_alarm_stop": {
+        "name": "Tắt cảnh báo thủ công"
+      },
+      "refresh": {
+        "name": "Đồng bộ dữ liệu ngay"
+      },
+      "cloud_refresh": {
+        "name": "Kiểm tra thông báo Tapo ngay"
+      },
+      "reboot": {
+        "name": "Khởi động lại camera"
+      },
+      "motion_detection_enabled": {
+        "name": "Phát hiện chuyển động"
+      },
+      "motion_detection_sensitivity": {
+        "name": "Độ nhạy phát hiện chuyển động"
+      },
+      "motion_detection_digital_sensitivity": {
+        "name": "Độ nhạy phát hiện chuyển động"
+      },
+      "people_detection_enabled": {
+        "name": "Phát hiện người"
+      },
+      "people_detection_sensitivity": {
+        "name": "Độ nhạy phát hiện người"
+      },
+      "people_detection_digital_sensitivity": {
+        "name": "Độ nhạy phát hiện người"
+      },
+      "pet_detection_enabled": {
+        "name": "Phát hiện thú cưng"
+      },
+      "pet_detection_sensitivity": {
+        "name": "Độ nhạy phát hiện thú cưng"
+      },
+      "pet_detection_digital_sensitivity": {
+        "name": "Độ nhạy phát hiện thú cưng"
+      },
+      "vehicle_detection_enabled": {
+        "name": "Phát hiện phương tiện"
+      },
+      "vehicle_detection_sensitivity": {
+        "name": "Độ nhạy phát hiện phương tiện"
+      },
+      "vehicle_detection_digital_sensitivity": {
+        "name": "Độ nhạy phát hiện phương tiện"
+      },
+      "bark_detection_enabled": {
+        "name": "Phát hiện tiếng chó sủa"
+      },
+      "bark_detection_sensitivity": {
+        "name": "Độ nhạy phát hiện tiếng chó sủa"
+      },
+      "bark_detection_digital_sensitivity": {
+        "name": "Độ nhạy phát hiện tiếng chó sủa"
+      },
+      "meow_detection_enabled": {
+        "name": "Phát hiện tiếng mèo kêu"
+      },
+      "meow_detection_sensitivity": {
+        "name": "Độ nhạy phát hiện tiếng mèo kêu"
+      },
+      "meow_detection_digital_sensitivity": {
+        "name": "Độ nhạy phát hiện tiếng mèo kêu"
+      },
+      "glass_detection_enabled": {
+        "name": "Phát hiện tiếng kính vỡ"
+      },
+      "glass_detection_sensitivity": {
+        "name": "Độ nhạy phát hiện tiếng kính vỡ"
+      },
+      "glass_detection_digital_sensitivity": {
+        "name": "Độ nhạy phát hiện tiếng kính vỡ"
+      },
+      "tamper_detection_enabled": {
+        "name": "Phát hiện can thiệp camera"
+      },
+      "tamper_detection_sensitivity": {
+        "name": "Độ nhạy phát hiện can thiệp camera"
+      },
+      "tamper_detection_digital_sensitivity": {
+        "name": "Độ nhạy phát hiện can thiệp camera"
+      },
+      "sound_detection_enabled": {
+        "name": "Phát hiện tiếng trẻ khóc"
+      },
+      "sound_detection_sensitivity": {
+        "name": "Độ nhạy phát hiện tiếng trẻ khóc"
+      },
+      "sound_detection_digital_sensitivity": {
+        "name": "Độ nhạy phát hiện tiếng trẻ khóc"
+      },
+      "linecrossing_detection_enabled": {
+        "name": "Phát hiện vượt đường ranh"
+      },
+      "linecrossing_detection_sensitivity": {
+        "name": "Độ nhạy phát hiện vượt đường ranh"
+      },
+      "linecrossing_detection_digital_sensitivity": {
+        "name": "Độ nhạy phát hiện vượt đường ranh"
+      },
+      "intrusion_detection_enabled": {
+        "name": "Phát hiện xâm nhập"
+      },
+      "intrusion_detection_sensitivity": {
+        "name": "Độ nhạy phát hiện xâm nhập"
+      },
+      "intrusion_detection_digital_sensitivity": {
+        "name": "Độ nhạy phát hiện xâm nhập"
+      },
+      "face_detection_enabled": {
+        "name": "Nhận diện khuôn mặt"
+      },
+      "face_detection_sensitivity": {
+        "name": "Độ nhạy nhận diện khuôn mặt"
+      },
+      "face_detection_digital_sensitivity": {
+        "name": "Độ nhạy nhận diện khuôn mặt"
+      },
+      "smart_tracking_people": {
+        "name": "Theo dõi người"
+      },
+      "smart_tracking_pet": {
+        "name": "Theo dõi thú cưng"
+      },
+      "smart_tracking_vehicle": {
+        "name": "Theo dõi phương tiện"
+      },
+      "smart_tracking_baby": {
+        "name": "Theo dõi em bé"
+      },
+      "recording_monday": {
+        "name": "Lịch ghi hình thứ Hai"
+      },
+      "recording_tuesday": {
+        "name": "Lịch ghi hình thứ Ba"
+      },
+      "recording_wednesday": {
+        "name": "Lịch ghi hình thứ Tư"
+      },
+      "recording_thursday": {
+        "name": "Lịch ghi hình thứ Năm"
+      },
+      "recording_friday": {
+        "name": "Lịch ghi hình thứ Sáu"
+      },
+      "recording_saturday": {
+        "name": "Lịch ghi hình thứ Bảy"
+      },
+      "recording_sunday": {
+        "name": "Lịch ghi hình Chủ nhật"
+      },
+      "sd_status": {
+        "name": "Thẻ nhớ {card}: trạng thái"
+      },
+      "sd_capacity": {
+        "name": "Thẻ nhớ {card}: dung lượng"
+      },
+      "sd_free": {
+        "name": "Thẻ nhớ {card}: còn trống"
+      },
+      "sd_used": {
+        "name": "Thẻ nhớ {card}: đã dùng"
+      },
+      "sd_total": {
+        "name": "Thẻ nhớ {card}: tổng dung lượng"
+      },
+      "sd_percent": {
+        "name": "Thẻ nhớ {card}: tỷ lệ sử dụng"
+      },
+      "sd_free_space": {
+        "name": "Thẻ nhớ {card}: dung lượng còn trống"
+      },
+      "sd_total_space": {
+        "name": "Thẻ nhớ {card}: tổng dung lượng"
+      }
+    },
+    "binary_sensor": {
+      "cloud_recent_familiar": {
+        "name": "Vừa có thông báo: Người quen"
+      },
+      "cloud_recent_stranger": {
+        "name": "Vừa có thông báo: Người lạ"
+      },
+      "cloud_recent_person": {
+        "name": "Vừa có thông báo: Người"
+      },
+      "cloud_recent_pet": {
+        "name": "Vừa có thông báo: Vật nuôi"
+      },
+      "cloud_recent_vehicle": {
+        "name": "Vừa có thông báo: Xe cộ"
+      },
+      "cloud_recent_motion": {
+        "name": "Vừa có thông báo: Chuyển động"
+      },
+      "cloud_recent_audio": {
+        "name": "Vừa có thông báo: Âm thanh"
+      },
+      "cloud_recent_baby_cry": {
+        "name": "Vừa có thông báo: Tiếng trẻ khóc"
+      },
+      "cloud_recent_bark": {
+        "name": "Vừa có thông báo: Tiếng chó sủa"
+      },
+      "cloud_recent_meow": {
+        "name": "Vừa có thông báo: Tiếng mèo kêu"
+      },
+      "cloud_recent_glass_break": {
+        "name": "Vừa có thông báo: Tiếng kính vỡ"
+      },
+      "cloud_recent_smoke_alarm": {
+        "name": "Vừa có thông báo: Tiếng còi báo khói"
+      },
+      "cloud_recent_tampering": {
+        "name": "Vừa có thông báo: Camera bị che hoặc can thiệp"
+      },
+      "cloud_recent_intrusion": {
+        "name": "Vừa có thông báo: Xâm nhập vùng"
+      },
+      "cloud_recent_line_crossing": {
+        "name": "Vừa có thông báo: Vượt hàng rào"
+      },
+      "model": {
+        "name": "Mẫu camera"
+      },
+      "firmware": {
+        "name": "Phiên bản phần mềm"
+      },
+      "hardware": {
+        "name": "Phiên bản phần cứng"
+      },
+      "mac": {
+        "name": "Địa chỉ MAC"
+      },
+      "ip_address": {
+        "name": "Địa chỉ IP"
+      },
+      "device_id": {
+        "name": "Mã thiết bị"
+      },
+      "connection_type": {
+        "name": "Kiểu kết nối"
+      },
+      "wifi_signal": {
+        "name": "Tín hiệu Wi-Fi"
+      },
+      "signal_level": {
+        "name": "Mức sóng Wi-Fi"
+      },
+      "sd_card": {
+        "name": "Trạng thái thẻ nhớ"
+      },
+      "last_alarm_type": {
+        "name": "Mã cảnh báo gần nhất"
+      },
+      "last_alarm_at": {
+        "name": "Thời điểm cảnh báo gần nhất"
+      },
+      "face_api_status": {
+        "name": "Trạng thái API khuôn mặt"
+      },
+      "face_count": {
+        "name": "Số khuôn mặt trong danh sách"
+      },
+      "last_face_id": {
+        "name": "Mã khuôn mặt gần nhất"
+      },
+      "last_face_name": {
+        "name": "Tên người nhận diện gần nhất"
+      },
+      "last_face_tag": {
+        "name": "Nhãn khuôn mặt gần nhất"
+      },
+      "last_recognized_at": {
+        "name": "Thời điểm nhận diện gần nhất"
+      },
+      "face_last_seen": {
+        "name": "Lần nhận diện gần nhất của khuôn mặt {face_id}"
+      },
+      "face_name": {
+        "name": "Tên khuôn mặt {face_id}"
+      },
+      "cloud_face_name": {
+        "name": "Người được Tapo báo nhận diện gần nhất"
+      },
+      "cloud_face_time": {
+        "name": "Thời điểm thông báo nhận diện gần nhất"
+      },
+      "cloud_face_type": {
+        "name": "Loại khuôn mặt trong thông báo gần nhất"
+      },
+      "cloud_person_time": {
+        "name": "Lần Tapo báo nhận diện {person} gần nhất"
+      },
+      "face_image": {
+        "name": "Ảnh khuôn mặt {face_id}"
+      },
+      "stream": {
+        "name": "Video trực tiếp chất lượng cao"
+      },
+      "sub_stream": {
+        "name": "Video trực tiếp tiết kiệm băng thông"
+      },
+      "status_led": {
+        "name": "Đèn LED trạng thái"
+      },
+      "led": {
+        "name": "Đèn LED trạng thái đang bật"
+      },
+      "privacy_mode": {
+        "name": "Chế độ riêng tư"
+      },
+      "lens_cover": {
+        "name": "Ống kính đang được che"
+      },
+      "recording": {
+        "name": "Ghi hình theo lịch"
+      },
+      "recording_loop": {
+        "name": "Ghi đè khi thẻ nhớ đầy"
+      },
+      "record_audio": {
+        "name": "Ghi âm trong video"
+      },
+      "microphone_mute": {
+        "name": "Tắt tiếng micro"
+      },
+      "noise_cancelling": {
+        "name": "Khử nhiễu micro"
+      },
+      "speaker_volume": {
+        "name": "Âm lượng loa"
+      },
+      "microphone_volume": {
+        "name": "Âm lượng micro"
+      },
+      "day_night_mode": {
+        "name": "Chế độ ngày/đêm"
+      },
+      "light_frequency": {
+        "name": "Tần số chống nhấp nháy"
+      },
+      "image_flip": {
+        "name": "Xoay hình 180 độ"
+      },
+      "lens_correction": {
+        "name": "Hiệu chỉnh méo hình"
+      },
+      "white_lamp": {
+        "name": "Đèn chiếu sáng trắng"
+      },
+      "auto_tracking": {
+        "name": "Tự động theo dõi đối tượng"
+      },
+      "privacy_zones": {
+        "name": "Bật vùng che riêng tư"
+      },
+      "notifications": {
+        "name": "Thông báo trên ứng dụng Tapo"
+      },
+      "rich_notifications": {
+        "name": "Thông báo Tapo kèm ảnh"
+      },
+      "preset": {
+        "name": "Chuyển đến vị trí đã lưu"
+      },
+      "ptz_stop": {
+        "name": "Dừng xoay camera"
+      },
+      "ptz_left": {
+        "name": "Xoay trái một bước"
+      },
+      "ptz_right": {
+        "name": "Xoay phải một bước"
+      },
+      "ptz_up": {
+        "name": "Xoay lên một bước"
+      },
+      "ptz_down": {
+        "name": "Xoay xuống một bước"
+      },
+      "ptz_calibrate": {
+        "name": "Hiệu chuẩn xoay camera"
+      },
+      "cruise_horizontal": {
+        "name": "Bắt đầu quét ngang"
+      },
+      "cruise_vertical": {
+        "name": "Bắt đầu quét dọc"
+      },
+      "cruise_stop": {
+        "name": "Dừng quét tuần tra"
+      },
+      "manual_alarm_start": {
+        "name": "Bật cảnh báo thủ công"
+      },
+      "manual_alarm_stop": {
+        "name": "Tắt cảnh báo thủ công"
+      },
+      "refresh": {
+        "name": "Đồng bộ dữ liệu ngay"
+      },
+      "cloud_refresh": {
+        "name": "Kiểm tra thông báo Tapo ngay"
+      },
+      "reboot": {
+        "name": "Khởi động lại camera"
+      },
+      "motion_detection_enabled": {
+        "name": "Phát hiện chuyển động"
+      },
+      "motion_detection_sensitivity": {
+        "name": "Độ nhạy phát hiện chuyển động"
+      },
+      "motion_detection_digital_sensitivity": {
+        "name": "Độ nhạy phát hiện chuyển động"
+      },
+      "people_detection_enabled": {
+        "name": "Phát hiện người"
+      },
+      "people_detection_sensitivity": {
+        "name": "Độ nhạy phát hiện người"
+      },
+      "people_detection_digital_sensitivity": {
+        "name": "Độ nhạy phát hiện người"
+      },
+      "pet_detection_enabled": {
+        "name": "Phát hiện thú cưng"
+      },
+      "pet_detection_sensitivity": {
+        "name": "Độ nhạy phát hiện thú cưng"
+      },
+      "pet_detection_digital_sensitivity": {
+        "name": "Độ nhạy phát hiện thú cưng"
+      },
+      "vehicle_detection_enabled": {
+        "name": "Phát hiện phương tiện"
+      },
+      "vehicle_detection_sensitivity": {
+        "name": "Độ nhạy phát hiện phương tiện"
+      },
+      "vehicle_detection_digital_sensitivity": {
+        "name": "Độ nhạy phát hiện phương tiện"
+      },
+      "bark_detection_enabled": {
+        "name": "Phát hiện tiếng chó sủa"
+      },
+      "bark_detection_sensitivity": {
+        "name": "Độ nhạy phát hiện tiếng chó sủa"
+      },
+      "bark_detection_digital_sensitivity": {
+        "name": "Độ nhạy phát hiện tiếng chó sủa"
+      },
+      "meow_detection_enabled": {
+        "name": "Phát hiện tiếng mèo kêu"
+      },
+      "meow_detection_sensitivity": {
+        "name": "Độ nhạy phát hiện tiếng mèo kêu"
+      },
+      "meow_detection_digital_sensitivity": {
+        "name": "Độ nhạy phát hiện tiếng mèo kêu"
+      },
+      "glass_detection_enabled": {
+        "name": "Phát hiện tiếng kính vỡ"
+      },
+      "glass_detection_sensitivity": {
+        "name": "Độ nhạy phát hiện tiếng kính vỡ"
+      },
+      "glass_detection_digital_sensitivity": {
+        "name": "Độ nhạy phát hiện tiếng kính vỡ"
+      },
+      "tamper_detection_enabled": {
+        "name": "Phát hiện can thiệp camera"
+      },
+      "tamper_detection_sensitivity": {
+        "name": "Độ nhạy phát hiện can thiệp camera"
+      },
+      "tamper_detection_digital_sensitivity": {
+        "name": "Độ nhạy phát hiện can thiệp camera"
+      },
+      "sound_detection_enabled": {
+        "name": "Phát hiện tiếng trẻ khóc"
+      },
+      "sound_detection_sensitivity": {
+        "name": "Độ nhạy phát hiện tiếng trẻ khóc"
+      },
+      "sound_detection_digital_sensitivity": {
+        "name": "Độ nhạy phát hiện tiếng trẻ khóc"
+      },
+      "linecrossing_detection_enabled": {
+        "name": "Phát hiện vượt đường ranh"
+      },
+      "linecrossing_detection_sensitivity": {
+        "name": "Độ nhạy phát hiện vượt đường ranh"
+      },
+      "linecrossing_detection_digital_sensitivity": {
+        "name": "Độ nhạy phát hiện vượt đường ranh"
+      },
+      "intrusion_detection_enabled": {
+        "name": "Phát hiện xâm nhập"
+      },
+      "intrusion_detection_sensitivity": {
+        "name": "Độ nhạy phát hiện xâm nhập"
+      },
+      "intrusion_detection_digital_sensitivity": {
+        "name": "Độ nhạy phát hiện xâm nhập"
+      },
+      "face_detection_enabled": {
+        "name": "Nhận diện khuôn mặt"
+      },
+      "face_detection_sensitivity": {
+        "name": "Độ nhạy nhận diện khuôn mặt"
+      },
+      "face_detection_digital_sensitivity": {
+        "name": "Độ nhạy nhận diện khuôn mặt"
+      },
+      "smart_tracking_people": {
+        "name": "Theo dõi người"
+      },
+      "smart_tracking_pet": {
+        "name": "Theo dõi thú cưng"
+      },
+      "smart_tracking_vehicle": {
+        "name": "Theo dõi phương tiện"
+      },
+      "smart_tracking_baby": {
+        "name": "Theo dõi em bé"
+      },
+      "recording_monday": {
+        "name": "Lịch ghi hình thứ Hai"
+      },
+      "recording_tuesday": {
+        "name": "Lịch ghi hình thứ Ba"
+      },
+      "recording_wednesday": {
+        "name": "Lịch ghi hình thứ Tư"
+      },
+      "recording_thursday": {
+        "name": "Lịch ghi hình thứ Năm"
+      },
+      "recording_friday": {
+        "name": "Lịch ghi hình thứ Sáu"
+      },
+      "recording_saturday": {
+        "name": "Lịch ghi hình thứ Bảy"
+      },
+      "recording_sunday": {
+        "name": "Lịch ghi hình Chủ nhật"
+      },
+      "sd_status": {
+        "name": "Thẻ nhớ {card}: trạng thái"
+      },
+      "sd_capacity": {
+        "name": "Thẻ nhớ {card}: dung lượng"
+      },
+      "sd_free": {
+        "name": "Thẻ nhớ {card}: còn trống"
+      },
+      "sd_used": {
+        "name": "Thẻ nhớ {card}: đã dùng"
+      },
+      "sd_total": {
+        "name": "Thẻ nhớ {card}: tổng dung lượng"
+      },
+      "sd_percent": {
+        "name": "Thẻ nhớ {card}: tỷ lệ sử dụng"
+      },
+      "sd_free_space": {
+        "name": "Thẻ nhớ {card}: dung lượng còn trống"
+      },
+      "sd_total_space": {
+        "name": "Thẻ nhớ {card}: tổng dung lượng"
+      }
+    },
+    "switch": {
+      "status_led": {
+        "name": "Đèn LED trạng thái"
+      },
+      "privacy_mode": {
+        "name": "Chế độ riêng tư"
+      },
+      "recording": {
+        "name": "Ghi hình theo lịch"
+      },
+      "recording_loop": {
+        "name": "Ghi đè khi thẻ nhớ đầy"
+      },
+      "record_audio": {
+        "name": "Ghi âm trong video"
+      },
+      "microphone_mute": {
+        "name": "Tắt tiếng micro"
+      },
+      "noise_cancelling": {
+        "name": "Khử nhiễu micro"
+      },
+      "image_flip": {
+        "name": "Xoay hình 180 độ"
+      },
+      "lens_correction": {
+        "name": "Hiệu chỉnh méo hình"
+      },
+      "white_lamp": {
+        "name": "Đèn chiếu sáng trắng"
+      },
+      "auto_tracking": {
+        "name": "Tự động theo dõi đối tượng"
+      },
+      "privacy_zones": {
+        "name": "Bật vùng che riêng tư"
+      },
+      "notifications": {
+        "name": "Thông báo trên ứng dụng Tapo"
+      },
+      "rich_notifications": {
+        "name": "Thông báo Tapo kèm ảnh"
+      },
+      "motion_detection_enabled": {
+        "name": "Phát hiện chuyển động"
+      },
+      "people_detection_enabled": {
+        "name": "Phát hiện người"
+      },
+      "pet_detection_enabled": {
+        "name": "Phát hiện thú cưng"
+      },
+      "vehicle_detection_enabled": {
+        "name": "Phát hiện phương tiện"
+      },
+      "bark_detection_enabled": {
+        "name": "Phát hiện tiếng chó sủa"
+      },
+      "meow_detection_enabled": {
+        "name": "Phát hiện tiếng mèo kêu"
+      },
+      "glass_detection_enabled": {
+        "name": "Phát hiện tiếng kính vỡ"
+      },
+      "tamper_detection_enabled": {
+        "name": "Phát hiện can thiệp camera"
+      },
+      "sound_detection_enabled": {
+        "name": "Phát hiện tiếng trẻ khóc"
+      },
+      "linecrossing_detection_enabled": {
+        "name": "Phát hiện vượt đường ranh"
+      },
+      "intrusion_detection_enabled": {
+        "name": "Phát hiện xâm nhập"
+      },
+      "face_detection_enabled": {
+        "name": "Nhận diện khuôn mặt"
+      },
+      "smart_tracking_people": {
+        "name": "Theo dõi người"
+      },
+      "smart_tracking_pet": {
+        "name": "Theo dõi thú cưng"
+      },
+      "smart_tracking_vehicle": {
+        "name": "Theo dõi phương tiện"
+      },
+      "smart_tracking_baby": {
+        "name": "Theo dõi em bé"
+      }
+    },
+    "number": {
+      "speaker_volume": {
+        "name": "Âm lượng loa"
+      },
+      "microphone_volume": {
+        "name": "Âm lượng micro"
+      },
+      "motion_detection_digital_sensitivity": {
+        "name": "Độ nhạy phát hiện chuyển động"
+      },
+      "people_detection_sensitivity": {
+        "name": "Độ nhạy phát hiện người"
+      },
+      "pet_detection_sensitivity": {
+        "name": "Độ nhạy phát hiện thú cưng"
+      },
+      "vehicle_detection_sensitivity": {
+        "name": "Độ nhạy phát hiện phương tiện"
+      },
+      "bark_detection_sensitivity": {
+        "name": "Độ nhạy phát hiện tiếng chó sủa"
+      },
+      "meow_detection_sensitivity": {
+        "name": "Độ nhạy phát hiện tiếng mèo kêu"
+      },
+      "glass_detection_sensitivity": {
+        "name": "Độ nhạy phát hiện tiếng kính vỡ"
+      }
+    },
+    "select": {
+      "day_night_mode": {
+        "name": "Chế độ ngày/đêm",
+        "state": {
+          "auto": "Tự động",
+          "on": "Ban đêm (hồng ngoại)",
+          "off": "Ban ngày (có màu)"
+        }
+      },
+      "light_frequency": {
+        "name": "Tần số chống nhấp nháy",
+        "state": {
+          "auto": "Tự động",
+          "50": "50 Hz",
+          "60": "60 Hz"
+        }
+      },
+      "tamper_detection_sensitivity": {
+        "name": "Độ nhạy phát hiện can thiệp camera",
+        "state": {
+          "low": "Thấp",
+          "medium": "Trung bình",
+          "high": "Cao"
+        }
+      },
+      "sound_detection_sensitivity": {
+        "name": "Độ nhạy phát hiện tiếng trẻ khóc",
+        "state": {
+          "low": "Thấp",
+          "medium": "Trung bình",
+          "high": "Cao"
+        }
+      },
+      "preset": {
+        "name": "Chuyển đến vị trí đã lưu"
+      }
+    },
+    "text": {
+      "recording_monday": {
+        "name": "Lịch ghi hình thứ Hai"
+      },
+      "recording_tuesday": {
+        "name": "Lịch ghi hình thứ Ba"
+      },
+      "recording_wednesday": {
+        "name": "Lịch ghi hình thứ Tư"
+      },
+      "recording_thursday": {
+        "name": "Lịch ghi hình thứ Năm"
+      },
+      "recording_friday": {
+        "name": "Lịch ghi hình thứ Sáu"
+      },
+      "recording_saturday": {
+        "name": "Lịch ghi hình thứ Bảy"
+      },
+      "recording_sunday": {
+        "name": "Lịch ghi hình Chủ nhật"
+      }
+    },
+    "button": {
+      "reboot": {
+        "name": "Khởi động lại camera"
+      },
+      "ptz_stop": {
+        "name": "Dừng xoay camera"
+      },
+      "ptz_left": {
+        "name": "Xoay trái một bước"
+      },
+      "ptz_right": {
+        "name": "Xoay phải một bước"
+      },
+      "ptz_up": {
+        "name": "Xoay lên một bước"
+      },
+      "ptz_down": {
+        "name": "Xoay xuống một bước"
+      },
+      "ptz_calibrate": {
+        "name": "Hiệu chuẩn xoay camera"
+      },
+      "cruise_horizontal": {
+        "name": "Bắt đầu quét ngang"
+      },
+      "cruise_vertical": {
+        "name": "Bắt đầu quét dọc"
+      },
+      "cruise_stop": {
+        "name": "Dừng quét tuần tra"
+      },
+      "manual_alarm_start": {
+        "name": "Bật cảnh báo thủ công"
+      },
+      "manual_alarm_stop": {
+        "name": "Tắt cảnh báo thủ công"
+      },
+      "refresh": {
+        "name": "Đồng bộ dữ liệu ngay"
+      },
+      "cloud_refresh": {
+        "name": "Kiểm tra thông báo Tapo ngay"
+      }
+    },
+    "camera": {
+      "stream": {
+        "name": "Video trực tiếp chất lượng cao"
+      },
+      "sub_stream": {
+        "name": "Video trực tiếp tiết kiệm băng thông"
+      }
+    },
+    "image": {
+      "face_image": {
+        "name": "Ảnh khuôn mặt {face_id}"
+      }
+    }
+  }
+}
