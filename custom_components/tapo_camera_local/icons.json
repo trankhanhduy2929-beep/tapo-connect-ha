@@ -1,0 +1,318 @@
+{
+  "entity": {
+    "binary_sensor": {
+      "cloud_recent_familiar": {
+        "default": "mdi:account-check"
+      },
+      "cloud_recent_stranger": {
+        "default": "mdi:account-question"
+      },
+      "cloud_recent_person": {
+        "default": "mdi:account"
+      },
+      "cloud_recent_pet": {
+        "default": "mdi:paw"
+      },
+      "cloud_recent_vehicle": {
+        "default": "mdi:car"
+      },
+      "cloud_recent_motion": {
+        "default": "mdi:motion-sensor"
+      },
+      "cloud_recent_audio": {
+        "default": "mdi:volume-high"
+      },
+      "cloud_recent_baby_cry": {
+        "default": "mdi:baby-face-outline"
+      },
+      "cloud_recent_bark": {
+        "default": "mdi:dog"
+      },
+      "cloud_recent_meow": {
+        "default": "mdi:cat"
+      },
+      "cloud_recent_glass_break": {
+        "default": "mdi:glass-fragile"
+      },
+      "cloud_recent_smoke_alarm": {
+        "default": "mdi:smoke-detector"
+      },
+      "cloud_recent_tampering": {
+        "default": "mdi:camera-off"
+      },
+      "cloud_recent_intrusion": {
+        "default": "mdi:shield-alert-outline"
+      },
+      "cloud_recent_line_crossing": {
+        "default": "mdi:vector-line"
+      }
+    },
+    "button": {
+      "reboot": {
+        "default": "mdi:restart"
+      },
+      "ptz_stop": {
+        "default": "mdi:camera-control"
+      },
+      "ptz_left": {
+        "default": "mdi:camera-control"
+      },
+      "ptz_right": {
+        "default": "mdi:camera-control"
+      },
+      "ptz_up": {
+        "default": "mdi:camera-control"
+      },
+      "ptz_down": {
+        "default": "mdi:camera-control"
+      },
+      "ptz_calibrate": {
+        "default": "mdi:camera-control"
+      },
+      "cruise_horizontal": {
+        "default": "mdi:camera-control"
+      },
+      "cruise_vertical": {
+        "default": "mdi:camera-control"
+      },
+      "cruise_stop": {
+        "default": "mdi:camera-control"
+      },
+      "manual_alarm_start": {
+        "default": "mdi:camera-control"
+      },
+      "manual_alarm_stop": {
+        "default": "mdi:camera-control"
+      },
+      "refresh": {
+        "default": "mdi:refresh"
+      },
+      "cloud_refresh": {
+        "default": "mdi:bell-ring"
+      }
+    },
+    "switch": {
+      "status_led": {
+        "default": "mdi:camera-outline"
+      },
+      "privacy_mode": {
+        "default": "mdi:shield-eye"
+      },
+      "recording": {
+        "default": "mdi:camera-outline"
+      },
+      "recording_loop": {
+        "default": "mdi:camera-outline"
+      },
+      "record_audio": {
+        "default": "mdi:camera-outline"
+      },
+      "microphone_mute": {
+        "default": "mdi:camera-outline"
+      },
+      "noise_cancelling": {
+        "default": "mdi:camera-outline"
+      },
+      "image_flip": {
+        "default": "mdi:camera-outline"
+      },
+      "lens_correction": {
+        "default": "mdi:camera-outline"
+      },
+      "white_lamp": {
+        "default": "mdi:camera-outline"
+      },
+      "auto_tracking": {
+        "default": "mdi:camera-outline"
+      },
+      "privacy_zones": {
+        "default": "mdi:camera-outline"
+      },
+      "notifications": {
+        "default": "mdi:camera-outline"
+      },
+      "rich_notifications": {
+        "default": "mdi:camera-outline"
+      },
+      "motion_detection_enabled": {
+        "default": "mdi:camera-outline"
+      },
+      "people_detection_enabled": {
+        "default": "mdi:camera-outline"
+      },
+      "pet_detection_enabled": {
+        "default": "mdi:camera-outline"
+      },
+      "vehicle_detection_enabled": {
+        "default": "mdi:camera-outline"
+      },
+      "bark_detection_enabled": {
+        "default": "mdi:camera-outline"
+      },
+      "meow_detection_enabled": {
+        "default": "mdi:camera-outline"
+      },
+      "glass_detection_enabled": {
+        "default": "mdi:camera-outline"
+      },
+      "tamper_detection_enabled": {
+        "default": "mdi:camera-outline"
+      },
+      "sound_detection_enabled": {
+        "default": "mdi:camera-outline"
+      },
+      "linecrossing_detection_enabled": {
+        "default": "mdi:camera-outline"
+      },
+      "intrusion_detection_enabled": {
+        "default": "mdi:camera-outline"
+      },
+      "face_detection_enabled": {
+        "default": "mdi:camera-outline"
+      },
+      "smart_tracking_people": {
+        "default": "mdi:camera-outline"
+      },
+      "smart_tracking_pet": {
+        "default": "mdi:camera-outline"
+      },
+      "smart_tracking_vehicle": {
+        "default": "mdi:camera-outline"
+      },
+      "smart_tracking_baby": {
+        "default": "mdi:camera-outline"
+      }
+    },
+    "sensor": {
+      "cloud_notification_familiar": {
+        "default": "mdi:account-check"
+      },
+      "cloud_notification_stranger": {
+        "default": "mdi:account-question"
+      },
+      "cloud_notification_person": {
+        "default": "mdi:account"
+      },
+      "cloud_notification_pet": {
+        "default": "mdi:paw"
+      },
+      "cloud_notification_vehicle": {
+        "default": "mdi:car"
+      },
+      "cloud_notification_motion": {
+        "default": "mdi:motion-sensor"
+      },
+      "cloud_notification_audio": {
+        "default": "mdi:volume-high"
+      },
+      "cloud_notification_baby_cry": {
+        "default": "mdi:baby-face-outline"
+      },
+      "cloud_notification_bark": {
+        "default": "mdi:dog"
+      },
+      "cloud_notification_meow": {
+        "default": "mdi:cat"
+      },
+      "cloud_notification_glass_break": {
+        "default": "mdi:glass-fragile"
+      },
+      "cloud_notification_smoke_alarm": {
+        "default": "mdi:smoke-detector"
+      },
+      "cloud_notification_tampering": {
+        "default": "mdi:camera-off"
+      },
+      "cloud_notification_intrusion": {
+        "default": "mdi:shield-alert-outline"
+      },
+      "cloud_notification_line_crossing": {
+        "default": "mdi:vector-line"
+      },
+      "cloud_notification_loitering": {
+        "default": "mdi:account-clock"
+      },
+      "cloud_notification_package_delivered": {
+        "default": "mdi:package-variant"
+      },
+      "cloud_notification_package_removed": {
+        "default": "mdi:package-variant-closed-minus"
+      },
+      "cloud_notification_anti_theft": {
+        "default": "mdi:shield-alert"
+      },
+      "cloud_notification_doorbell": {
+        "default": "mdi:doorbell-video"
+      },
+      "cloud_notification_missed_doorbell": {
+        "default": "mdi:doorbell-video"
+      },
+      "cloud_notification_sd_uninitialized": {
+        "default": "mdi:micro-sd"
+      },
+      "cloud_notification_sd_full": {
+        "default": "mdi:micro-sd"
+      },
+      "cloud_notification_disk_uninitialized": {
+        "default": "mdi:harddisk"
+      },
+      "cloud_notification_disk_full": {
+        "default": "mdi:harddisk"
+      },
+      "cloud_notification_sd_encryption_disabled": {
+        "default": "mdi:shield-off-outline"
+      },
+      "cloud_notification_sd_decryption_failed": {
+        "default": "mdi:shield-alert-outline"
+      },
+      "cloud_notification_low_battery": {
+        "default": "mdi:battery-low"
+      },
+      "cloud_notification_battery_empty": {
+        "default": "mdi:battery-outline"
+      },
+      "cloud_notification_battery_charged": {
+        "default": "mdi:battery"
+      },
+      "cloud_notification_overheat": {
+        "default": "mdi:thermometer-alert"
+      },
+      "cloud_notification_overheat_cleared": {
+        "default": "mdi:thermometer-check"
+      },
+      "cloud_notification_new_firmware": {
+        "default": "mdi:update"
+      },
+      "cloud_notification_multiple_detection": {
+        "default": "mdi:bell-ring"
+      },
+      "cloud_notification_latest_time": {
+        "default": "mdi:clock-outline"
+      },
+      "cloud_notification_latest_type": {
+        "default": "mdi:bell-ring-outline"
+      },
+      "face_name": {
+        "default": "mdi:account-box-outline"
+      },
+      "cloud_face_name": {
+        "default": "mdi:face-recognition"
+      },
+      "cloud_face_time": {
+        "default": "mdi:clock-outline"
+      },
+      "cloud_face_type": {
+        "default": "mdi:face-recognition"
+      },
+      "cloud_person_time": {
+        "default": "mdi:clock-outline"
+      }
+    },
+    "number": {},
+    "image": {
+      "face_image": {
+        "default": "mdi:face-recognition"
+      }
+    }
+  }
+}
