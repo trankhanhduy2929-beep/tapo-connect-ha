@@ -145,15 +145,15 @@ SETTINGS_BY_KEY = {setting.key: setting for setting in SETTINGS}
 
 ACTIONS = {
     "reboot": ("rebootDevice", {"system": {"reboot": "null"}}),
-    "ptz_stop": ("stopMove", {"motor": {"stop": ""}}),
-    "ptz_left": ("relativeMove", {"motor": {"movestep": {"direction": "180"}}}),
-    "ptz_right": ("relativeMove", {"motor": {"movestep": {"direction": "0"}}}),
-    "ptz_up": ("relativeMove", {"motor": {"movestep": {"direction": "90"}}}),
-    "ptz_down": ("relativeMove", {"motor": {"movestep": {"direction": "270"}}}),
-    "ptz_calibrate": ("manualCalibrate", {"motor": {"manual_cali": ""}}),
+    "ptz_stop": ("stopMove", {"motor": {"stop": "null"}}),
+    "ptz_left": ("singalMove", {"motor": {"movestep": {"direction": "180"}}}),
+    "ptz_right": ("singalMove", {"motor": {"movestep": {"direction": "0"}}}),
+    "ptz_up": ("singalMove", {"motor": {"movestep": {"direction": "90"}}}),
+    "ptz_down": ("singalMove", {"motor": {"movestep": {"direction": "270"}}}),
+    "ptz_calibrate": ("manualCalibrate", {"motor": {"manual_cali": {"cal_to_resume": "0"}}}),
     "cruise_horizontal": ("cruiseMove", {"motor": {"cruise": {"coord": "x"}}}),
     "cruise_vertical": ("cruiseMove", {"motor": {"cruise": {"coord": "y"}}}),
-    "cruise_stop": ("cruiseStop", {"motor": {"cruise_stop": {}}}),
+    "cruise_stop": ("cruiseStop", {"motor": {"cruise_stop": "null"}}),
     "manual_alarm_start": ("do", {"msg_alarm": {"manual_msg_alarm": {"action": "start"}}}),
     "manual_alarm_stop": ("do", {"msg_alarm": {"manual_msg_alarm": {"action": "stop"}}}),
 }

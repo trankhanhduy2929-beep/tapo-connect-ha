@@ -5,7 +5,7 @@
   ],
   "name": "Tapo Connect",
   "documentation": "https://github.com/trankhanhduy2929-beep/tapo-connect-ha",
-  "version": "0.12.2",
+  "version": "0.12.3",
   "integration_type": "device",
   "iot_class": "cloud_polling",
   "config_flow": true,
@@ -16,7 +16,8 @@
   ],
   "dependencies": [
     "stream",
-    "ffmpeg"
+    "ffmpeg",
+    "zeroconf"
   ],
   "after_dependencies": [
     "tapo_control"

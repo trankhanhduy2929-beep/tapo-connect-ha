@@ -2,7 +2,7 @@
 
 DOMAIN = "tapo_camera_local"
 MANUFACTURER = "TP-Link"
-VERSION = "0.12.1"
+VERSION = "0.12.3"
 
 CONF_ACCOUNT_HOST = "account_email"
 CONF_ACCOUNT_PASSWORD = "account_password"
