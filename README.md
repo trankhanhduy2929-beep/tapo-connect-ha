@@ -203,7 +203,7 @@ Các `tag` dùng được: `stranger`, `familiar`, `person`, `pet`, `vehicle`, `
 
 ## Hỗ trợ
 
-- Issues: https://github.com/trankhanhduy2929/tapo-connect-ha/issues
+- Issues: https://github.com/trankhanhduy2929-beep/tapo-connect-ha/issues
 - Portal license: https://tapo-connect-license.vercel.app
 - Khi báo lỗi: dùng **Tải xuống chẩn đoán** trên entry (đã che credentials). **Không** đăng mật khẩu, token, license key, email, ảnh mặt công khai.
 
