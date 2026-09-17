@@ -3,8 +3,6 @@
 from __future__ import annotations
 
 import base64
-import hashlib
-import json
 from urllib.parse import urlsplit
 
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey

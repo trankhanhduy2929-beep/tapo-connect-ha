@@ -9,7 +9,6 @@ import secrets
 import time
 import uuid
 from dataclasses import dataclass
-from pathlib import Path
 from urllib.parse import urlsplit
 
 from cryptography.exceptions import InvalidSignature

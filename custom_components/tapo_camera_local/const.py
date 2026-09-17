@@ -2,7 +2,7 @@
 
 DOMAIN = "tapo_camera_local"
 MANUFACTURER = "TP-Link"
-VERSION = "0.11.2"
+VERSION = "0.12.0"
 
 CONF_ACCOUNT_HOST = "account_email"
 CONF_ACCOUNT_PASSWORD = "account_password"
@@ -13,6 +13,7 @@ CONF_CONNECTION_MODE = "connection_mode"
 CONF_AUTH_MODE = "auth_mode"
 CONF_SCAN_INTERVAL = "scan_interval"
 CONF_SUB_STREAM_URL = "sub_stream_url"
+CONF_PUSH_ENABLED = "realtime_push"
 
 MODE_STANDALONE = "standalone"
 MODE_TAPO_CONTROL = "tapo_control"

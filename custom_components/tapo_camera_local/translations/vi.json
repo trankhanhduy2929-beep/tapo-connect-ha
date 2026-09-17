@@ -179,7 +179,11 @@
         "title": "Chu kỳ đọc thông báo cloud",
         "description": "Chọn chu kỳ đọc thông báo (5–300 giây). Mặc định 5 giây; sau 10 phút yên lặng giãn ít nhất 30 giây. Setting camera đọc riêng mỗi 30 giây. Đây là polling, không phải push realtime; độ trễ còn tùy camera và TP-Link. Hai nút làm mới đọc ngay thông báo hoặc setting. Cấu hình lại để đăng nhập lại.",
         "data": {
-          "scan_interval": "Kiểm tra mỗi (giây)"
+          "scan_interval": "Kiểm tra mỗi (giây)",
+          "realtime_push": "Push realtime (thử nghiệm)"
+        },
+        "data_description": {
+          "realtime_push": "Khi bật, Home Assistant giữ kênh MQTT qua WebSocket tới cloud Tapo và cập nhật sensor/setting ngay khi camera báo thay đổi, thay vì chỉ poll định kỳ. Tính năng thử nghiệm: nếu kênh lỗi, polling vẫn chạy làm dự phòng và không mất dữ liệu. Kết nối dùng đúng phiên Tapo đã đăng nhập."
         }
       },
       "license": {

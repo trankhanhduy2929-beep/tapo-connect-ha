@@ -92,9 +92,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: TapoConfigEntry) -> bool
             raise
         platforms = platforms_for(entry)
         settings = CloudSettingsCoordinator(hass, entry, coordinator)
-        hass.data.setdefault(DOMAIN, {})[entry.entry_id] = {"notification_coordinator": coordinator, "coordinator": settings, "platforms": platforms}
+        runtime = {"notification_coordinator": coordinator, "coordinator": settings, "platforms": platforms}
+        hass.data.setdefault(DOMAIN, {})[entry.entry_id] = runtime
         await hass.config_entries.async_forward_entry_setups(entry, platforms)
         entry.async_create_background_task(hass, settings.async_refresh(), "Tapo cloud settings discovery")
+        from .cloud_push import async_setup_push
+
+        if push := await async_setup_push(hass, entry, coordinator, settings):
+            runtime["push"] = push
         if guard:
             guard.start()
         return True
@@ -161,6 +166,8 @@ async def async_unload_entry(hass: HomeAssistant, entry: TapoConfigEntry) -> boo
     if unloaded:
         runtime = hass.data.get(DOMAIN, {}).pop(entry.entry_id, None)
         if runtime:
+            if push := runtime.get("push"):
+                await push.async_stop()
             if coordinator := runtime.get("notification_coordinator"):
                 if settings := runtime.get("coordinator"):
                     await settings.async_close()

@@ -2,7 +2,7 @@
 
 # Tapo Connect — Camera Tapo trên Home Assistant
 
-**Phiên bản 0.11.2 · Tapo C260 qua cloud · Tiếng Việt · Có license**
+**Phiên bản 0.12.0 · Tapo C260 qua cloud · Push realtime · Tiếng Việt · Có license**
 
 Custom integration đưa camera Tapo C260 lên Home Assistant qua **cloud TP-Link**: đọc thông báo nhận diện (người quen/người lạ/vật nuôi/xe/…), điều khiển ~48 setting (LED, riêng tư, ghi hình, PTZ, preset, lịch ghi, độ nhạy AI, ngày/đêm…). Không cần cùng LAN, không cần Camera Account, không cần cài mồi Tapo Control.
 
@@ -40,7 +40,7 @@ Custom integration đưa camera Tapo C260 lên Home Assistant qua **cloud TP-Lin
 
 ### Cách 2 — ZIP thủ công
 
-1. Tải `tapo_connect_<ver>.zip` từ [Releases](https://github.com/trankhanhduy2929/tapo-connect-ha/releases).
+1. Tải `tapo_connect_<ver>.zip` từ [releases](https://github.com/trankhanhduy2929/tapo-connect-ha/releases).
 2. Giải nén vào `<HA_CONFIG>/custom_components/` sao cho đường dẫn cuối là:
    ```
    <HA_CONFIG>/custom_components/tapo_camera_local/manifest.json
@@ -139,9 +139,13 @@ Các `tag` dùng được: `stranger`, `familiar`, `person`, `pet`, `vehicle`, `
 
 ### Tốc độ cập nhật
 
-- Thông báo: poll **mỗi 5 giây** (chỉnh được 5–300 giây trong **Cấu hình**); tự giãn **30 giây** sau 10 phút yên lặng.
+- **Push realtime (thử nghiệm, bật mặc định):** integration giữ một kênh MQTT-over-WebSocket
+  tới cloud Tapo; khi camera báo thay đổi, HA cập nhật sensor/setting **ngay lập tức** thay vì
+  chờ chu kỳ poll. Tắt/bật trong **Cấu hình → Push realtime**.
+- Thông báo: poll **mỗi 5 giây** (chỉnh 5–300 giây) — vẫn chạy làm **dự phòng** khi kênh push lỗi.
 - Settings: poll **30 giây**.
-- Đây là **polling**, không phải push realtime.
+- Kênh push là phụ trợ: mọi dữ liệu vẫn đọc qua REST đã xác minh; push lỗi chỉ làm HA chậm hơn,
+  không sai và không mất dữ liệu.
 
 ### Đổi tùy chọn sau cài
 
