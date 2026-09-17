@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import ClassVar
 
 from homeassistant.components.sensor import SensorEntity
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity import EntityCategory
 
 from .const import (
@@ -150,6 +151,19 @@ class TapoSignalSensor(TapoEntity, SensorEntity):
         return super().available and self.native_value is not None
 
 
+def _face_image_proxy(hass, device_id: str, face_id) -> str | None:
+    """Return the image-proxy URL for a catalog face, or None if the entity is absent."""
+    if face_id is None:
+        return None
+    registry = er.async_get(hass)
+    entity_id = registry.async_get_entity_id(
+        "image", "tapo_camera_local", f"{device_id}_face_{face_id}_image"
+    )
+    if entity_id is None:
+        return None
+    return f"/api/image_proxy/{entity_id}"
+
+
 class TapoFaceSensor(TapoEntity, SensorEntity):
     def __init__(self, coordinator, key: str, title: str) -> None:
         super().__init__(coordinator, key)
@@ -162,6 +176,15 @@ class TapoFaceSensor(TapoEntity, SensorEntity):
         if self._key == "face_count":
             return self.coordinator.face_history.state["face_count"]
         return self.coordinator.face_history.latest().get(self._key)
+
+    @property
+    def entity_picture(self) -> str | None:
+        if self._key != "last_face_name":
+            return None
+        return _face_image_proxy(
+            self.hass, self.coordinator.device_id,
+            self.coordinator.face_history.latest().get("last_face_id"),
+        )
 
     @property
     def available(self) -> bool:
@@ -201,6 +224,10 @@ class TapoFaceNameSensor(TapoEntity, SensorEntity):
         return super().available and state["catalog_available"] and self._identifier in state["catalog"]
 
     @property
+    def entity_picture(self) -> str | None:
+        return _face_image_proxy(self.hass, self.coordinator.device_id, self._identifier)
+
+    @property
     def extra_state_attributes(self):
         person = self.coordinator.face_history.state["catalog"].get(self._identifier, {})
         return {"face_id": self._identifier, "tag": person.get("tag"), "source": "face_catalog"}
@@ -222,6 +249,10 @@ class TapoPersonSensor(TapoFaceSensor):
     def available(self) -> bool:
         state = self.coordinator.face_history.state
         return super().available and self._identifier in state["catalog"]
+
+    @property
+    def entity_picture(self) -> str | None:
+        return _face_image_proxy(self.hass, self.coordinator.device_id, self._identifier)
 
     @property
     def extra_state_attributes(self):

@@ -2,11 +2,22 @@
 
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.core import callback
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
 from .notification_data import CORE_CATEGORIES, NOTIFICATION_CATEGORIES
+
+
+def _face_image_proxy(hass, device_id: str, face_id) -> str | None:
+    """Image-proxy URL for a catalog face when a local entry exposes that image."""
+    if face_id is None:
+        return None
+    entity_id = er.async_get(hass).async_get_entity_id(
+        "image", DOMAIN, f"{device_id}_face_{face_id}_image"
+    )
+    return f"/api/image_proxy/{entity_id}" if entity_id else None
 
 
 async def async_setup_notification_sensors(hass, entry, async_add_entities):
@@ -67,6 +78,13 @@ class NotificationSensor(CoordinatorEntity, SensorEntity):
     def native_value(self):
         event = self.event or {}
         return event.get("name" if self.key == "cloud_face_name" else "tag" if self.key == "cloud_face_type" else "notified_at")
+
+    @property
+    def entity_picture(self) -> str | None:
+        event = self.event or {}
+        if self.key not in {"cloud_face_name", "cloud_face_time", "cloud_face_type", "cloud_person_time"}:
+            return None
+        return _face_image_proxy(self.hass, self.coordinator.device_id, event.get("face_id"))
 
     @property
     def extra_state_attributes(self):

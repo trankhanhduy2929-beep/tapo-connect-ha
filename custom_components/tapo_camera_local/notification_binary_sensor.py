@@ -4,6 +4,7 @@ import time
 
 from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.core import callback
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.event import async_call_later
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
@@ -58,6 +59,19 @@ class NotificationBinarySensor(CoordinatorEntity, BinarySensorEntity):
     @property
     def is_on(self):
         return time.monotonic() < self._until
+
+    @property
+    def entity_picture(self) -> str | None:
+        if self.category not in {"familiar", "stranger"}:
+            return None
+        event = self.coordinator.history.categories.get(self.category) or {}
+        face_id = event.get("face_id")
+        if face_id is None:
+            return None
+        entity_id = er.async_get(self.hass).async_get_entity_id(
+            "image", DOMAIN, f"{self.coordinator.device_id}_face_{face_id}_image"
+        )
+        return f"/api/image_proxy/{entity_id}" if entity_id else None
 
     @property
     def extra_state_attributes(self):
