@@ -35,12 +35,12 @@ Custom integration đưa camera Tapo C260 lên Home Assistant qua **cloud TP-Lin
 ### Cách 1 — HACS (khuyên dùng)
 
 1. Mở **HACS → menu ⋮ → Custom repositories**.
-2. Thêm URL: `https://github.com/trankhanhduy2929/tapo-connect-ha` — loại **Integration**.
+2. Thêm URL: `https://github.com/trankhanhduy2929-beep/tapo-connect-ha` — loại **Integration**.
 3. Tìm **Tapo Connect** → **Download** → **khởi động lại Home Assistant**.
 
 ### Cách 2 — ZIP thủ công
 
-1. Tải `tapo_connect_<ver>.zip` từ [releases](https://github.com/trankhanhduy2929/tapo-connect-ha/releases).
+1. Tải `tapo_connect_<ver>.zip` từ [releases](https://github.com/trankhanhduy2929-beep/tapo-connect-ha/releases).
 2. Giải nén vào `<HA_CONFIG>/custom_components/` sao cho đường dẫn cuối là:
    ```
    <HA_CONFIG>/custom_components/tapo_camera_local/manifest.json
