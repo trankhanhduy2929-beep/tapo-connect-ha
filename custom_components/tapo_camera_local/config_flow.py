@@ -41,6 +41,7 @@ from .const import (
     DEFAULT_CLOUD_SCAN_INTERVAL,
     DEFAULT_NAME,
     DEFAULT_PORT,
+    DEFAULT_PUSH_ENABLED,
     DEFAULT_SCAN_INTERVAL,
     DEFAULT_USERNAME,
     DOMAIN,
@@ -296,14 +297,14 @@ class TapoOptionsFlow(OptionsFlowWithReload):
             else:
                 options = dict(self.config_entry.options)
                 options[CONF_SCAN_INTERVAL] = int(interval)
-                options[CONF_PUSH_ENABLED] = bool(user_input.get(CONF_PUSH_ENABLED, True))
+                options[CONF_PUSH_ENABLED] = bool(user_input.get(CONF_PUSH_ENABLED, DEFAULT_PUSH_ENABLED))
                 return self.async_create_entry(title="", data=options)
         return self.async_show_form(
             step_id="cloud_notifications", errors=errors, data_schema=vol.Schema({
                 vol.Required(CONF_SCAN_INTERVAL, default=self.config_entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_CLOUD_SCAN_INTERVAL)): selector.NumberSelector(
                     selector.NumberSelectorConfig(min=MIN_CLOUD_SCAN_INTERVAL, max=MAX_CLOUD_SCAN_INTERVAL, step=1, mode="box", unit_of_measurement="s")
                 ),
-                vol.Optional(CONF_PUSH_ENABLED, default=self.config_entry.options.get(CONF_PUSH_ENABLED, True)): selector.BooleanSelector(),
+                vol.Optional(CONF_PUSH_ENABLED, default=self.config_entry.options.get(CONF_PUSH_ENABLED, DEFAULT_PUSH_ENABLED)): selector.BooleanSelector(),
             }),
         )
 

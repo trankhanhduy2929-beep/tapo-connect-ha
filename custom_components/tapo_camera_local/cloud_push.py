@@ -29,7 +29,7 @@ import requests
 
 from .cloud_account import app_parameters
 from .cloud_storage import CloudSessionStore
-from .const import CONF_PUSH_ENABLED, DOMAIN
+from .const import CONF_PUSH_ENABLED, DEFAULT_PUSH_ENABLED, DOMAIN
 from .notification_client import (
     NotificationError,
     VerifiedAdapter,
@@ -276,7 +276,7 @@ class CloudPushClient:
 
 
 def push_enabled(entry) -> bool:
-    return bool(entry.options.get(CONF_PUSH_ENABLED, entry.data.get(CONF_PUSH_ENABLED, True)))
+    return bool(entry.options.get(CONF_PUSH_ENABLED, entry.data.get(CONF_PUSH_ENABLED, DEFAULT_PUSH_ENABLED)))
 
 
 async def async_setup_push(hass, entry, notification_coordinator, settings_coordinator):

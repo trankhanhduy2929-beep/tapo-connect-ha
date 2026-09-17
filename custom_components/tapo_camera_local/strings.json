@@ -1332,7 +1332,7 @@
           "realtime_push": "Realtime push (experimental)"
         },
         "data_description": {
-          "realtime_push": "When on, Home Assistant keeps an MQTT-over-WebSocket channel to the Tapo cloud gateway and refreshes sensors and settings the moment the camera reports a change, instead of only polling. This is experimental: if the channel fails, polling continues as the fallback and no data is lost. The connection uses the same signed-in Tapo session."
+          "realtime_push": "Experimental, off by default. Keeps an MQTT-over-WebSocket channel to the Tapo cloud gateway and refreshes the polling coordinators when the camera reports a shadow/state change. Notifications and face/motion events are NOT delivered on this channel during live testing (they arrive via the phone push service); cloud polling stays the source of truth and the automatic fallback."
         }
       },
       "license": {

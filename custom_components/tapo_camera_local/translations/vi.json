@@ -183,7 +183,7 @@
           "realtime_push": "Push realtime (thử nghiệm)"
         },
         "data_description": {
-          "realtime_push": "Khi bật, Home Assistant giữ kênh MQTT qua WebSocket tới cloud Tapo và cập nhật sensor/setting ngay khi camera báo thay đổi, thay vì chỉ poll định kỳ. Tính năng thử nghiệm: nếu kênh lỗi, polling vẫn chạy làm dự phòng và không mất dữ liệu. Kết nối dùng đúng phiên Tapo đã đăng nhập."
+          "realtime_push": "Tính năng thử nghiệm, mặc định TẮT. Giữ kênh MQTT qua WebSocket tới cloud Tapo và đánh thức coordinator khi camera báo thay đổi shadow/trạng thái. Thông báo và sự kiện face/chuyển động KHÔNG đi qua kênh này trong kiểm thử thật (chúng đi qua dịch vụ push của điện thoại); polling cloud vẫn là nguồn dữ liệu và dự phòng tự động."
         }
       },
       "license": {

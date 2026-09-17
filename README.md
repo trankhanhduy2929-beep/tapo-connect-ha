@@ -2,7 +2,7 @@
 
 # Tapo Connect — Camera Tapo trên Home Assistant
 
-**Phiên bản 0.12.0 · Tapo C260 qua cloud · Push realtime · Tiếng Việt · Có license**
+**Phiên bản 0.12.1 · Tapo C260 qua cloud · Tiếng Việt · Có license**
 
 Custom integration đưa camera Tapo C260 lên Home Assistant qua **cloud TP-Link**: đọc thông báo nhận diện (người quen/người lạ/vật nuôi/xe/…), điều khiển ~48 setting (LED, riêng tư, ghi hình, PTZ, preset, lịch ghi, độ nhạy AI, ngày/đêm…). Không cần cùng LAN, không cần Camera Account, không cần cài mồi Tapo Control.
 
@@ -139,11 +139,12 @@ Các `tag` dùng được: `stranger`, `familiar`, `person`, `pet`, `vehicle`, `
 
 ### Tốc độ cập nhật
 
-- **Push realtime (thử nghiệm, bật mặc định):** integration giữ một kênh MQTT-over-WebSocket
-  tới cloud Tapo; khi camera báo thay đổi, HA cập nhật sensor/setting **ngay lập tức** thay vì
-  chờ chu kỳ poll. Tắt/bật trong **Cấu hình → Push realtime**.
-- Thông báo: poll **mỗi 5 giây** (chỉnh 5–300 giây) — vẫn chạy làm **dự phòng** khi kênh push lỗi.
+- Thông báo: poll **mỗi 5 giây** (chỉnh 5–300 giây trong **Cấu hình**); tự giãn **30 giây** sau 10 phút yên lặng.
 - Settings: poll **30 giây**.
+- **Push realtime (thử nghiệm, mặc định TẮT):** có kênh MQTT-over-WebSocket tới cloud Tapo, nhưng
+  **kiểm thử thật cho thấy sự kiện face/chuyển động KHÔNG đi qua kênh này** — chúng đi qua dịch vụ
+  push của điện thoại (FCM). Kênh MQTT chỉ hữu ích cho thay đổi shadow/trạng thái thiết bị. Vì vậy
+  polling vẫn là nguồn dữ liệu chính; bật/tắt trong **Cấu hình → Push realtime** nếu muốn thử.
 - Kênh push là phụ trợ: mọi dữ liệu vẫn đọc qua REST đã xác minh; push lỗi chỉ làm HA chậm hơn,
   không sai và không mất dữ liệu.
 
