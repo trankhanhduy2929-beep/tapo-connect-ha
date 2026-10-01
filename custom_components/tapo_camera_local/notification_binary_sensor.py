@@ -28,7 +28,7 @@ class NotificationBinarySensor(CoordinatorEntity, BinarySensorEntity):
         self._cancel = None
         self._attr_translation_key = f"cloud_recent_{category}"
         self._attr_unique_id = f"{coordinator.device_id}_cloud_recent_{category}"
-        self._attr_device_info = DeviceInfo(identifiers={(DOMAIN, coordinator.device_id)}, manufacturer="TP-Link", model="C260", name="Tapo C260")
+        self._attr_device_info = DeviceInfo(identifiers={(DOMAIN, coordinator.device_id)}, manufacturer="TP-Link", model=coordinator.device_model or "C260", name=coordinator.device_name)
 
     async def async_added_to_hass(self):
         await super().async_added_to_hass()

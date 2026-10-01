@@ -55,7 +55,7 @@ class NotificationSensor(CoordinatorEntity, SensorEntity):
         self.person_key = person_key
         self._attr_translation_key = key
         self._attr_unique_id = f"{coordinator.device_id}_{key}" + (f"_{person_key}" if person_key else "")
-        self._attr_device_info = DeviceInfo(identifiers={(DOMAIN, coordinator.device_id)}, manufacturer="TP-Link", model="C260", name="Tapo C260")
+        self._attr_device_info = DeviceInfo(identifiers={(DOMAIN, coordinator.device_id)}, manufacturer="TP-Link", model=coordinator.device_model or "C260", name=coordinator.device_name)
         if key in ("cloud_face_time", "cloud_person_time"):
             self._attr_device_class = "timestamp"
         if key == "cloud_face_type":

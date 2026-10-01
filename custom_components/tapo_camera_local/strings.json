@@ -7,7 +7,7 @@
       },
       "tapo_control": {
         "title": "Use existing Tapo Control",
-        "description": "Select the working C260 from Tapo: Cameras Control. This companion only adds read-only sensors and face metadata. It does not copy passwords or close the source connection. Keep Tapo Control installed and enabled.",
+        "description": "Select the working Tapo camera from Tapo: Cameras Control. This companion only adds read-only sensors and face metadata. It does not copy passwords or close the source connection. Keep Tapo Control installed and enabled.",
         "data": {
           "tapo_control_entry_id": "Camera in Tapo Control"
         }
@@ -87,7 +87,7 @@
       },
       "cloud_device": {
         "title": "Choose your camera",
-        "description": "Select a C260. HA keeps face name/time sensors and adds person, stranger, pet, vehicle and sound notifications plus camera settings over cloud. Notifications default to 5 seconds (30 when idle); settings sync independently every 30 seconds. No local login or Tapo Control needed. Cloud images/video are not implemented.",
+        "description": "Select a Tapo camera from your account (for example C260 or C560WS). HA keeps face name/time sensors and adds person, stranger, pet, vehicle and sound notifications plus camera settings over cloud. Notifications default to 5 seconds (30 when idle); settings sync independently every 30 seconds. No local login or Tapo Control needed. Cloud images/video are not implemented.",
         "data": {
           "camera_id": "Camera"
         }
@@ -122,7 +122,7 @@
       "cloud_bad_response": "Tapo returned an unsupported response. Check diagnostics without sharing credentials.",
       "cloud_bad_request": "This cloud operation is not permitted.",
       "cloud_busy": "A sign-in request is still running. Wait; do not submit again.",
-      "cloud_no_devices": "No supported C260 was found in this account.",
+      "cloud_no_devices": "No supported Tapo camera was found in this account.",
       "cloud_invalid_device": "Select a camera returned by your account.",
       "cloud_storage": "HA could not save the private session. Check free space and config permissions, then retry camera selection.",
       "license_unavailable": "License server unavailable. Try again; existing camera credentials are unchanged.",
@@ -147,7 +147,7 @@
       "cloud_bad_response": "Tapo returned an unsupported response. Check diagnostics without sharing credentials.",
       "cloud_bad_request": "This cloud operation is not permitted.",
       "cloud_busy": "A sign-in request is still running. Wait; do not submit again.",
-      "cloud_no_devices": "No supported C260 was found in this account.",
+      "cloud_no_devices": "No supported Tapo camera was found in this account.",
       "cloud_invalid_device": "Select a camera returned by your account.",
       "cloud_storage": "HA could not save the private session. Check free space and config permissions, then retry camera selection.",
       "license_configuration": "The publisher must configure the HTTPS license server and public signing key first.",

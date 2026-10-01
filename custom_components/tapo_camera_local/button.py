@@ -50,7 +50,7 @@ class NotificationRefreshButton(CoordinatorEntity, ButtonEntity):
     def __init__(self, coordinator):
         super().__init__(coordinator)
         self._attr_unique_id = f"{coordinator.device_id}_cloud_refresh"
-        self._attr_device_info = DeviceInfo(identifiers={(DOMAIN, coordinator.device_id)}, manufacturer="TP-Link", model="C260", name="Tapo C260")
+        self._attr_device_info = DeviceInfo(identifiers={(DOMAIN, coordinator.device_id)}, manufacturer="TP-Link", model=coordinator.device_model or "C260", name=coordinator.device_name)
 
     @property
     def available(self):

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import base64
 import json
+import logging
 import re
 import ssl
 import time
@@ -22,6 +23,8 @@ from .notification_client import (
     cloud_base,
     signed_headers,
 )
+
+_LOGGER = logging.getLogger(__name__)
 
 ACCOUNT_BASE = "https://account-api.i.tplinkcloud.com"
 STATUS_PATH = "/api/v2/account/getAccountStatusAndUrl"
@@ -162,6 +165,7 @@ class CloudAccount:
         self.email_sent_at = None
         self.session_data = None
         self.devices = {}
+        self.device_models = {}
 
     def discard(self):
         if self.session_data is not None:
@@ -236,22 +240,39 @@ class CloudAccount:
         if not isinstance(records, list) or len(records) > 2000:
             raise CloudAccountError("cloud_bad_response")
         devices = {}
+        models = {}
+        seen = []
         for record in records:
-            if not isinstance(record, dict) or not re.fullmatch(r"C260(?:\([^)]*\))?", str(record.get("deviceModel", "")), re.IGNORECASE):
+            if not isinstance(record, dict):
                 continue
-            identifier = secret_text(record.get("deviceId"))
-            name = record.get("alias") or "Tapo C260"
+            model = str(record.get("deviceModel") or "").strip()
+            device_type = str(record.get("deviceType") or "").strip()
+            seen.append(model or device_type or "unknown")
+            normalized = re.sub(r"[^0-9A-Za-z]", "", model).upper()
+            if not normalized.startswith("C260") and device_type.upper() != "SMART.IPCAMERA":
+                continue
+            try:
+                identifier = secret_text(record.get("deviceId"))
+            except CloudAccountError:
+                continue
+            name = record.get("alias") or f"Tapo {model or 'camera'}"
             if not isinstance(name, str) or not 0 < len(name) <= 256:
-                name = "Tapo C260"
+                name = f"Tapo {model or 'camera'}"
             try:
                 decoded = base64.b64decode(name, validate=True).decode("utf-8")
                 if decoded:
                     name = decoded
             except (ValueError, UnicodeError):
                 pass
-            name = "".join(character for character in name if ord(character) >= 32)[:80] or "Tapo C260"
-            devices[identifier] = f"{name} · C260 · {identifier[-6:]}"
+            name = "".join(character for character in name if ord(character) >= 32)[:80] or f"Tapo {model or 'camera'}"
+            label = model or "Tapo camera"
+            seen.append(label)
+            devices[identifier] = f"{name} · {label} · {identifier[-6:]}"
+            models[identifier] = model
+        if not devices:
+            _LOGGER.warning("No usable Tapo camera in this account; %d device(s) reported: %s", len(records), ", ".join(seen) or "none")
         self.devices = devices
+        self.device_models = models
         return dict(devices)
 
     def check_camera(self, camera_id: str):

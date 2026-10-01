@@ -51,6 +51,15 @@ class NotificationCoordinator(DataUpdateCoordinator[dict]):
         self._history_saved_at = None
         self._history_restored = False
 
+    @property
+    def device_model(self) -> str:
+        value = self.config_entry.data.get("cloud_model")
+        return value.strip() if isinstance(value, str) else ""
+
+    @property
+    def device_name(self) -> str:
+        return f"Tapo {self.device_model}" if self.device_model else "Tapo C260"
+
     def _apply_interval(self):
         idle = time.monotonic() - self._last_activity >= CLOUD_IDLE_AFTER
         wanted = max(self.fast_interval, CLOUD_IDLE_INTERVAL) if idle else self.fast_interval

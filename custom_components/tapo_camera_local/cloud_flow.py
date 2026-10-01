@@ -168,7 +168,10 @@ class CloudLoginFlow:
             account.discard()
             self._cloud_forget()
             return self.async_abort(reason="cloud_storage")
+        model = ((getattr(account, "device_models", {}) or {}).get(camera_id) or "").strip()
         data = {CONF_CONNECTION_MODE: MODE_CLOUD_NOTIFICATIONS, "camera_id": camera_id, "cloud_credentials_id": identifier, "cloud_email": account.email}
+        if model:
+            data["cloud_model"] = model
         license_identifier = entry.data.get(LICENSE_INSTANCE) if entry else getattr(self, "_license_identifier", None)
         if license_identifier:
             if entry is None and any(other.data.get(LICENSE_INSTANCE) == license_identifier for other in self.hass.config_entries.async_entries(DOMAIN)):
@@ -180,7 +183,7 @@ class CloudLoginFlow:
         self._cloud_forget()
         if entry is not None:
             return self.async_update_reload_and_abort(entry, data=data)
-        return self.async_create_entry(title="Tapo C260 · Cloud", data=data)
+        return self.async_create_entry(title=f"Tapo {model or 'C260'} · Cloud", data=data)
 
 
 def _ignore_cloud_result(future):

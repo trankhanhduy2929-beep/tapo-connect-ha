@@ -35,7 +35,7 @@ class CloudSettingsCoordinator(DataUpdateCoordinator[dict]):
 
     @property
     def device_name(self):
-        return "Tapo C260"
+        return self.notifications.device_name
 
     async def _async_camera(self):
         client = self.notifications.client

@@ -7,7 +7,7 @@
       },
       "tapo_control": {
         "title": "Dùng Tapo Control đang có",
-        "description": "Chọn C260 đã hoạt động trong Tapo: Cameras Control. Bản bổ sung chỉ đọc sensor, thông tin khuôn mặt và ảnh khuôn mặt thử nghiệm; không sao chép mật khẩu hay đóng kết nối gốc. Giữ Tapo Control được cài và bật.",
+        "description": "Chọn camera Tapo đã hoạt động trong Tapo: Cameras Control. Bản bổ sung chỉ đọc sensor, thông tin khuôn mặt và ảnh khuôn mặt thử nghiệm; không sao chép mật khẩu hay đóng kết nối gốc. Giữ Tapo Control được cài và bật.",
         "data": {
           "tapo_control_entry_id": "Camera trong Tapo Control"
         }
@@ -87,7 +87,7 @@
       },
       "cloud_device": {
         "title": "Chọn camera của bạn",
-        "description": "Chọn C260 trong tài khoản. HA giữ sensor tên/thời điểm và thêm thông báo người, người lạ, vật nuôi, xe, âm thanh cùng setting qua cloud. Thông báo mặc định 5 giây (giãn 30 giây khi yên lặng); setting đồng bộ độc lập mỗi 30 giây. Không cần local hoặc Tapo Control; chưa có ảnh/video cloud.",
+        "description": "Chọn camera Tapo trong tài khoản (ví dụ C260 hoặc C560WS). HA giữ sensor tên/thời điểm và thêm thông báo người, người lạ, vật nuôi, xe, âm thanh cùng setting qua cloud. Thông báo mặc định 5 giây (giãn 30 giây khi yên lặng); setting đồng bộ độc lập mỗi 30 giây. Không cần local hoặc Tapo Control; chưa có ảnh/video cloud.",
         "data": {
           "camera_id": "Camera"
         }
@@ -122,7 +122,7 @@
       "cloud_bad_response": "Tapo trả dữ liệu chưa hỗ trợ. Kiểm tra chẩn đoán, không chia sẻ thông tin đăng nhập.",
       "cloud_bad_request": "Thao tác cloud này không được cho phép.",
       "cloud_busy": "Yêu cầu đăng nhập đang xử lý. Vui lòng chờ, không bấm gửi lại.",
-      "cloud_no_devices": "Không tìm thấy C260 được hỗ trợ trong tài khoản này.",
+      "cloud_no_devices": "Không tìm thấy camera Tapo được hỗ trợ trong tài khoản này.",
       "cloud_invalid_device": "Chọn camera có trong danh sách tài khoản của bạn.",
       "cloud_storage": "HA không lưu được phiên riêng. Kiểm tra dung lượng/quyền config rồi thử lại bước chọn camera.",
       "license_unavailable": "Server license tạm thời không phản hồi. Thử lại; tài khoản camera cũ được giữ nguyên.",
@@ -147,7 +147,7 @@
       "cloud_bad_response": "Tapo trả dữ liệu chưa hỗ trợ. Kiểm tra chẩn đoán, không chia sẻ thông tin đăng nhập.",
       "cloud_bad_request": "Thao tác cloud này không được cho phép.",
       "cloud_busy": "Yêu cầu đăng nhập đang xử lý. Vui lòng chờ, không bấm gửi lại.",
-      "cloud_no_devices": "Không tìm thấy C260 được hỗ trợ trong tài khoản này.",
+      "cloud_no_devices": "Không tìm thấy camera Tapo được hỗ trợ trong tài khoản này.",
       "cloud_invalid_device": "Chọn camera có trong danh sách tài khoản của bạn.",
       "cloud_storage": "HA không lưu được phiên riêng. Kiểm tra dung lượng/quyền config rồi thử lại bước chọn camera.",
       "license_configuration": "Nhà phát hành cần cấu hình server license HTTPS và public key trước.",
