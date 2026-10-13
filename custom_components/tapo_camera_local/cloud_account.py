@@ -62,6 +62,29 @@ def secret_text(value) -> str:
     return value
 
 
+def normalize_username(value: str) -> str:
+    text = " ".join(value.split())[:254]
+    if not text:
+        raise ValueError("empty")
+    if "@" in text:
+        if not re.fullmatch(r"[^\s@]+@[^\s@]+\.[^\s@]+", text):
+            raise ValueError("invalid email")
+        return text
+    digits = re.sub(r"[ ().-]", "", text)
+    if digits.startswith("00"):
+        digits = "+" + digits[2:]
+    elif not digits.startswith("+"):
+        if digits.startswith("0"):
+            digits = "+84" + digits[1:]
+        elif digits.startswith("84") and 9 <= len(digits) <= 15:
+            digits = "+" + digits
+        else:
+            digits = "+" + digits
+    if not re.fullmatch(r"\+[1-9][0-9]{5,14}", digits):
+        raise ValueError("invalid phone")
+    return digits
+
+
 def validated_session(value: dict) -> dict:
     if not isinstance(value, dict) or value.get("version") != 1:
         raise NotificationAuthError("Cloud session unavailable; sign in through Home Assistant")
@@ -187,7 +210,13 @@ class CloudAccount:
     def begin(self, email: str, password: str, region: str = "") -> bool:
         if self.phase != "new":
             raise CloudAccountError("cloud_restart_login")
-        if not isinstance(email, str) or len(email) > 254 or not re.fullmatch(r"[^\s@]+@[^\s@]+\.[^\s@]+", email) or not isinstance(password, str) or not 0 < len(password) <= 1024 or not isinstance(region, str) or region and not re.fullmatch(r"[A-Za-z]{2}", region):
+        if not isinstance(email, str) or not isinstance(password, str) or not 0 < len(password) <= 1024 or not isinstance(region, str) or region and not re.fullmatch(r"[A-Za-z]{2}", region):
+            raise CloudAccountError("cloud_invalid_input")
+        try:
+            email = normalize_username(email)
+        except ValueError:
+            raise CloudAccountError("cloud_invalid_input") from None
+        if not email:
             raise CloudAccountError("cloud_invalid_input")
         self.email = email
         self.phase = "login_started"

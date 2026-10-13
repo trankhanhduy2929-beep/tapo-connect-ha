@@ -77,7 +77,7 @@ class CloudLoginFlow:
         entry = self._entry_to_update()
         email = entry.data.get("cloud_email", "") if entry else ""
         return self.async_show_form(step_id="cloud_login", errors=errors, data_schema=vol.Schema({
-            vol.Required("email", default=email): selector.TextSelector(selector.TextSelectorConfig(type=selector.TextSelectorType.EMAIL)),
+            vol.Required("email", default=email): selector.TextSelector(selector.TextSelectorConfig(type=selector.TextSelectorType.TEXT)),
             vol.Required("password"): selector.TextSelector(selector.TextSelectorConfig(type=selector.TextSelectorType.PASSWORD)),
             vol.Optional("region", default=""): selector.TextSelector(),
         }))
