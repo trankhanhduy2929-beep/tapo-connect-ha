@@ -1,6 +1,7 @@
-"""Simple Tapo account, optional email code and camera-selection forms."""
+"""Simple Tapo account sign-in; every camera in the account is added automatically."""
 
 import asyncio
+import logging
 import re
 import uuid
 
@@ -13,6 +14,13 @@ from .cloud_account import CloudAccount, CloudAccountError
 from .cloud_storage import CloudSessionStore
 from .const import CONF_CONNECTION_MODE, DOMAIN, MODE_CLOUD_NOTIFICATIONS
 from .notification_client import NotificationAuthError, NotificationError
+
+_LOGGER = logging.getLogger(__name__)
+
+
+def _same_cloud_account(account, other) -> bool:
+    email = getattr(account, "email", "")
+    return bool(email) and other.data.get(CONF_CONNECTION_MODE) == MODE_CLOUD_NOTIFICATIONS and other.data.get("cloud_email") == email
 
 
 class CloudLoginFlow:
@@ -113,7 +121,11 @@ class CloudLoginFlow:
             vol.Required("code"): selector.TextSelector(selector.TextSelectorConfig(type=selector.TextSelectorType.PASSWORD)),
         }))
 
+    def _camera_configured(self, camera_id) -> bool:
+        return self.hass.config_entries.async_entry_for_domain_unique_id(DOMAIN, f"cloud_notifications:{camera_id}") is not None
+
     async def async_step_cloud_device(self, user_input=None):
+        """Finish sign-in: add every camera in the account without a picker."""
         entry = self._entry_to_update()
         errors = {}
         account = None
@@ -124,19 +136,15 @@ class CloudLoginFlow:
                 raise CloudAccountError("cloud_restart_login")
             if not account.devices:
                 await self._cloud_call(account.cameras)
-            if user_input is not None:
-                camera_id = user_input.get("camera_id")
+            if entry is not None:
+                camera_id = entry.data.get("camera_id")
                 if camera_id not in account.devices:
                     errors["base"] = "cloud_invalid_device"
-                elif entry is not None and (entry.data.get(CONF_CONNECTION_MODE) != MODE_CLOUD_NOTIFICATIONS or entry.data.get("camera_id") != camera_id):
-                    self._cloud_forget()
-                    return self.async_abort(reason="wrong_device")
                 else:
-                    if entry is None:
-                        await self.async_set_unique_id(f"cloud_notifications:{camera_id}")
-                        self._abort_if_unique_id_configured()
                     await self._cloud_call(account.check_camera, camera_id)
                     return await self._cloud_finish(account, camera_id, entry)
+            else:
+                return await self._cloud_finish_many(account)
         except CloudAccountError as error:
             errors["base"] = error.kind
         except NotificationAuthError:
@@ -147,11 +155,55 @@ class CloudLoginFlow:
         if account is None:
             self._cloud_forget()
             return self.async_abort(reason="cloud_restart_login")
-        if not account.devices and not errors:
-            errors["base"] = "cloud_no_devices"
-        default = entry.data.get("camera_id") if entry else next(iter(account.devices), None)
-        field = vol.Required("camera_id", default=default) if default in account.devices else vol.Required("camera_id")
-        return self.async_show_form(step_id="cloud_device", errors=errors, data_schema=vol.Schema({field: vol.In(account.devices)}))
+        return self.async_abort(reason=errors.get("base") or "cloud_no_devices")
+
+    async def _cloud_finish_many(self, account):
+        pending = [camera_id for camera_id in account.devices if not self._camera_configured(camera_id)]
+        if not pending:
+            self._cloud_forget()
+            return self.async_abort(reason="already_configured")
+        primary = pending[0]
+        await self._cloud_call(account.check_camera, primary)
+        result = await self._cloud_finish(account, primary, None)
+        if result.get("type") == "create_entry" and len(pending) > 1:
+            self.hass.async_create_task(self._cloud_add_cameras(account, pending[1:]))
+        return result
+
+    async def _cloud_add_cameras(self, account, camera_ids):
+        from types import MappingProxyType
+
+        from homeassistant.config_entries import ConfigEntry
+
+        from .license_client import LICENSE_INSTANCE
+
+        for camera_id in camera_ids:
+            try:
+                await self.hass.async_add_executor_job(account.check_camera, camera_id)
+                identifier = uuid.uuid4().hex
+                store = CloudSessionStore(self.hass, identifier)
+                await store.async_save(account.session_data)
+                model = ((getattr(account, "device_models", {}) or {}).get(camera_id) or "").strip()
+                data = {CONF_CONNECTION_MODE: MODE_CLOUD_NOTIFICATIONS, "camera_id": camera_id, "cloud_credentials_id": identifier, "cloud_email": account.email}
+                if model:
+                    data["cloud_model"] = model
+                if getattr(self, "_license_identifier", None):
+                    data[LICENSE_INSTANCE] = self._license_identifier
+                    data["license_required"] = True
+                entry = ConfigEntry(
+                    data=data,
+                    discovery_keys=MappingProxyType({}),
+                    domain=DOMAIN,
+                    minor_version=self.MINOR_VERSION,
+                    options={},
+                    source="user",
+                    subentries_data=None,
+                    title=f"Tapo {model or 'C260'} · Cloud",
+                    unique_id=f"cloud_notifications:{camera_id}",
+                    version=self.VERSION,
+                )
+                await self.hass.config_entries.async_add(entry)
+            except Exception:  # one camera must not block the others
+                _LOGGER.exception("Không thêm được camera cloud %s", camera_id[-6:])
 
     async def _cloud_finish(self, account, camera_id, entry):
         from .license_client import LICENSE_INSTANCE
@@ -159,6 +211,9 @@ class CloudLoginFlow:
 
         if entry is None and (await self.hass.async_add_executor_job(load_policy)).enabled and not getattr(self, "_license_verified", False):
             return self.async_abort(reason="license_required")
+        if entry is None:
+            await self.async_set_unique_id(f"cloud_notifications:{camera_id}")
+            self._abort_if_unique_id_configured()
         identifier = entry.data.get("cloud_credentials_id") if entry else None
         identifier = identifier or uuid.uuid4().hex
         try:
@@ -174,7 +229,10 @@ class CloudLoginFlow:
             data["cloud_model"] = model
         license_identifier = entry.data.get(LICENSE_INSTANCE) if entry else getattr(self, "_license_identifier", None)
         if license_identifier:
-            if entry is None and any(other.data.get(LICENSE_INSTANCE) == license_identifier for other in self.hass.config_entries.async_entries(DOMAIN)):
+            if entry is None and any(
+                other.data.get(LICENSE_INSTANCE) == license_identifier and not _same_cloud_account(account, other)
+                for other in self.hass.config_entries.async_entries(DOMAIN)
+            ):
                 return self.async_abort(reason="license_in_use")
             data[LICENSE_INSTANCE] = license_identifier
             data["license_required"] = True

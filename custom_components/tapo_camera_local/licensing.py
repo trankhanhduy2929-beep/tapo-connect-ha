@@ -13,7 +13,7 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.storage import Store
 
-from .const import DOMAIN
+from .const import CONF_CONNECTION_MODE, DOMAIN, MODE_CLOUD_NOTIFICATIONS
 from .license_client import (
     LICENSE_INSTANCE,
     LicenseError,
@@ -26,10 +26,25 @@ from .license_client import (
 from .license_policy_locked import load_policy
 
 
+def _shares_cloud_account(entry, other) -> bool:
+    """Cloud cameras of one Tapo account share a single license identity."""
+    return (
+        entry.data.get(CONF_CONNECTION_MODE) == MODE_CLOUD_NOTIFICATIONS
+        and other.data.get(CONF_CONNECTION_MODE) == MODE_CLOUD_NOTIFICATIONS
+        and bool(entry.data.get("cloud_email"))
+        and entry.data.get("cloud_email") == other.data.get("cloud_email")
+    )
+
+
 class LicenseStore:
     def __init__(self, hass, identifier):
         self.identifier = str(uuid.UUID(identifier))
-        self.store = Store(hass, 1, f"{DOMAIN}.license.{self.identifier}", private=True)
+        stores = hass.data.setdefault(f"{DOMAIN}_license_stores", {})
+        store = stores.get(self.identifier)
+        if store is None:
+            store = Store(hass, 1, f"{DOMAIN}.license.{self.identifier}", private=True)
+            stores[self.identifier] = store
+        self.store = store
 
     async def load(self):
         value = await self.store.async_load()
@@ -75,7 +90,8 @@ async def _async_license_form(flow, user_input=None, entry=None):
         await store.save(data)
         if user_input is not None:
             try:
-                if any(other.data.get(LICENSE_INSTANCE) == identifier and (entry is None or other.entry_id != entry.entry_id) for other in flow.hass.config_entries.async_entries(DOMAIN)):
+                reused = entry is None and bool(key) and index.get(key_hash) == identifier
+                if not reused and any(other.data.get(LICENSE_INSTANCE) == identifier and (entry is None or other.entry_id != entry.entry_id) for other in flow.hass.config_entries.async_entries(DOMAIN)):
                     raise LicenseError("license_in_use")
                 token = await request_lease(async_get_clientsession(flow.hass), policy, data["identity"], key, "activate")
                 await store.save({**data, "key": key, "lease": token})
@@ -143,7 +159,7 @@ async def async_prepare_license(hass, entry):
                 return None
             raise LicenseError("license_missing")
         policy.check()
-        if any(other.entry_id < entry.entry_id and other.data.get(LICENSE_INSTANCE) == identifier for other in hass.config_entries.async_entries(DOMAIN)):
+        if any(other.entry_id < entry.entry_id and other.data.get(LICENSE_INSTANCE) == identifier and not _shares_cloud_account(entry, other) for other in hass.config_entries.async_entries(DOMAIN)):
             raise LicenseError("license_in_use")
         guard = LicenseGuard(hass, entry, policy)
         await guard.check()
