@@ -30,7 +30,10 @@ ACCOUNT_BASE = "https://account-api.i.tplinkcloud.com"
 STATUS_PATH = "/api/v2/account/getAccountStatusAndUrl"
 LOGIN_PATH = "/api/v2/account/login"
 EMAIL_PATH = "/api/v2/account/getEmailVC4TerminalMFA"
+SMS_PATH = "/api/v2/account/getSmsVC4TerminalMFA"
 VERIFY_PATH = "/api/v2/account/checkMFACodeAndLogin"
+MFA_EMAIL = 2
+MFA_PHONE = 4
 DEVICES_PATH = "/api/v2/common/getDeviceList"
 AUTH_CODES = {-20651, -20675, -20677}
 MFA_MAX_AGE = 600
@@ -138,7 +141,7 @@ class CloudGateway:
         self.session.close()
 
     def post(self, base: str, path: str, body: dict, token: str | None = None) -> dict:
-        if path not in {STATUS_PATH, LOGIN_PATH, EMAIL_PATH, VERIFY_PATH, DEVICES_PATH, "/api/v2/common/getWebServiceInfo", "/"} or path == "/" and (set(body) != {"method", "params"} or body["method"] != "refreshToken"):
+        if path not in {STATUS_PATH, LOGIN_PATH, EMAIL_PATH, SMS_PATH, VERIFY_PATH, DEVICES_PATH, "/api/v2/common/getWebServiceInfo", "/"} or path == "/" and (set(body) != {"method", "params"} or body["method"] != "refreshToken"):
             raise CloudAccountError("cloud_bad_request")
         if path == "/api/v2/common/getWebServiceInfo" and body != {"serviceIds": ["nbu.iot-app-server.app-v2"]}:
             raise CloudAccountError("cloud_bad_request")
@@ -202,6 +205,7 @@ class CloudAccount:
         self.session_data = None
         self.devices = {}
         self.device_models = {}
+        self.mfa_type = MFA_EMAIL
 
     def discard(self):
         if self.session_data is not None:
@@ -248,10 +252,17 @@ class CloudAccount:
                 return True
             self.process_id = secret_text(result["MFAProcessId"])
             methods = result.get("supportedMFATypes")
-            if isinstance(methods, list) and not any(type(method) is int and method == 2 for method in methods):
+            supported = [method for method in methods if type(method) is int] if isinstance(methods, list) else []
+            if not isinstance(methods, list) or MFA_EMAIL in supported:
+                self.mfa_type = MFA_EMAIL
+                path = EMAIL_PATH
+            elif MFA_PHONE in supported:
+                self.mfa_type = MFA_PHONE
+                path = SMS_PATH
+            else:
                 raise CloudAccountError("cloud_mfa_unsupported")
             self.phase = "email_started"
-            gateway.post(self.login_base, EMAIL_PATH, {"cloudUserName": email, "cloudPassword": password, "appType": self.material["app_type"], "terminalUUID": self.terminal, "locale": "en_US"})
+            gateway.post(self.login_base, path, {"cloudUserName": email, "cloudPassword": password, "appType": self.material["app_type"], "terminalUUID": self.terminal, "locale": "en_US"})
             self.email_sent_at = time.monotonic()
             self.phase = "waiting_code"
             return False
@@ -268,7 +279,7 @@ class CloudAccount:
         self.phase = "verification_started"
         try:
             with CloudGateway(self.material, self.terminal) as gateway:
-                result = gateway.post(self.login_base, VERIFY_PATH, {"cloudUserName": self.email, "appType": self.material["app_type"], "MFAProcessId": self.process_id, "MFAType": 2, "code": code, "terminalBindEnabled": False, "supportBindAccount": False})
+                result = gateway.post(self.login_base, VERIFY_PATH, {"cloudUserName": self.email, "appType": self.material["app_type"], "MFAProcessId": self.process_id, "MFAType": self.mfa_type, "code": code, "terminalBindEnabled": False, "supportBindAccount": False})
             self._accept(result)
         finally:
             self.process_id = None

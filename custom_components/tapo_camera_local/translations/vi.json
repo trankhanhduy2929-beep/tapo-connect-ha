@@ -79,8 +79,8 @@
         }
       },
       "cloud_mfa": {
-        "title": "Mã xác minh email Tapo",
-        "description": "Nhập mã 6 chữ số gửi đến email Tapo, giữ nguyên số 0 ở đầu. Không chia sẻ mã. Chỉ gửi xác minh một lần; nếu mã bị từ chối hoặc hết hạn, bắt đầu đăng nhập lại. Không tắt MFA hoặc đánh dấu máy này là thiết bị tin cậy.",
+        "title": "Mã xác minh Tapo",
+        "description": "Nhập mã 6 chữ số Tapo gửi tới email hoặc số điện thoại của bạn, giữ nguyên số 0 ở đầu. Không chia sẻ mã. Chỉ gửi xác minh một lần; nếu mã bị từ chối hoặc hết hạn, bắt đầu đăng nhập lại. Không tắt MFA hoặc đánh dấu máy này là thiết bị tin cậy.",
         "data": {
           "code": "Mã xác minh 6 chữ số"
         }

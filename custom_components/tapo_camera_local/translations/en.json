@@ -79,8 +79,8 @@
         }
       },
       "cloud_mfa": {
-        "title": "Tapo email verification",
-        "description": "Enter the six-digit code sent to your Tapo email. Keep leading zeroes. One verification request is sent; do not share the code. If it is rejected or expired, start sign-in again. MFA is never disabled and this machine is not marked trusted.",
+        "title": "Tapo verification",
+        "description": "Enter the six-digit code Tapo sent to your email or phone. Keep leading zeroes. One verification request is sent; do not share the code. If it is rejected or expired, start sign-in again. MFA is never disabled and this machine is not marked trusted.",
         "data": {
           "code": "Verification code"
         }
