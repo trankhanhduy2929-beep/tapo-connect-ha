@@ -2,7 +2,7 @@
 
 # Tapo Connect — Camera Tapo trên Home Assistant
 
-**Phiên bản 0.13.0 · Tapo C260 qua cloud · Tiếng Việt · Có license**
+**Phiên bản 0.13.1 · Tapo C260 qua cloud · Tiếng Việt · Có license**
 
 Custom integration đưa camera Tapo C260 lên Home Assistant qua **cloud TP-Link**: đọc thông báo nhận diện (người quen/người lạ/vật nuôi/xe/…), điều khiển ~48 setting (LED, riêng tư, ghi hình, PTZ, preset, lịch ghi, độ nhạy AI, ngày/đêm…). Không cần cùng LAN, không cần Camera Account, không cần cài mồi Tapo Control.
 

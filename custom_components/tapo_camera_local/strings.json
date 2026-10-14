@@ -100,6 +100,11 @@
         }
       }
     },
+    "progress": {
+      "cloud_login": "Signing in to your Tapo account…",
+      "cloud_mfa": "Verifying the Tapo code…",
+      "cloud_device": "Adding the cameras in your Tapo account…"
+    },
     "error": {
       "cannot_connect": "Camera transport failed. This can be TLS, session or network compatibility, not necessarily a firewall problem. If Tapo Control works, use the existing-controller option.",
       "unexpected_response": "The camera replied, but the response format was unexpected. This is not proof of a network fault. Check the sanitized tapo_camera_local log or use the existing Tapo Control option.",

@@ -100,6 +100,11 @@
         }
       }
     },
+    "progress": {
+      "cloud_login": "Đang đăng nhập tài khoản Tapo…",
+      "cloud_mfa": "Đang xác minh mã Tapo…",
+      "cloud_device": "Đang thêm camera trong tài khoản Tapo…"
+    },
     "error": {
       "cannot_connect": "Lỗi kết nối, TLS hoặc phiên giao tiếp; không nhất thiết là lỗi mạng. Nếu Tapo Control hoạt động, hãy chọn dùng kết nối đang có.",
       "unexpected_response": "Camera đã trả lời nhưng định dạng response chưa phù hợp. Xem log tapo_camera_local đã lọc thông tin nhạy cảm; không kết luận do firewall.",
