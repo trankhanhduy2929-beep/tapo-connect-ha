@@ -80,9 +80,8 @@ def normalize_username(value: str) -> str:
     stripped = re.sub(r"[ ().-]", "", text)
     if not re.fullmatch(r"\+?\d+", stripped):
         raise ValueError("unexpected characters in phone")
-    digits = stripped[1:] if stripped.startswith("+") else stripped
-    if digits.startswith("00"):
-        digits = digits[2:]
+    digits = stripped.removeprefix("+")
+    digits = digits.removeprefix("00")
     if digits.startswith("0"):
         national = digits[1:]
         candidate = f"+84-{national}"
