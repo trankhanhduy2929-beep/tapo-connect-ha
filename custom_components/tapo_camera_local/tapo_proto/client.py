@@ -17,6 +17,15 @@ from .models import DeviceInfo
 SLOW_QUERIES = frozenset({"getAppComponentList", "getSdCardStatus", "getClockStatus"})
 
 
+def _face_ops():
+    try:
+        from .. import face_ops
+    except ImportError:  # imported as a top-level module by the test harness
+        import face_ops
+
+    return face_ops
+
+
 class TapoConnectionError(Exception):
     """A sanitized network or protocol failure."""
 
@@ -352,6 +361,22 @@ class TapoCamera:
         else:
             self._statuses["doFaceInfoGet"] = {"status": "ok", "image": "available"}
         return image
+
+    def face_set(self, face_id: str | int, *, name: str | None = None, tag: str | None = None) -> dict:
+        """Rename and/or re-tag one catalog face (set_face_info, operate=set)."""
+        face_ops = _face_ops()
+        return self.call("setFaceInfo", face_ops.set_face_payload(face_id, name=name, tag=tag))
+
+    def face_delete(self, face_id: str | int) -> dict:
+        """Delete one catalog face (set_face_info, operate=del)."""
+        face_ops = _face_ops()
+        return self.call("setFaceInfo", face_ops.delete_face_payload(face_id))
+
+    def face_add(self, name: str, tag: str, image: Any, *, face_id: int = 0) -> dict:
+        """Add a familiar/stranger face from a JPEG/PNG payload (doFaceInfoAdd)."""
+        face_ops = _face_ops()
+        encoded = face_ops.encode_face_image(image)
+        return self.call("doFaceInfoAdd", face_ops.add_face_payload(name, tag, encoded, face_id=face_id))
 
     def _face_snapshot(self) -> dict:
         config = self._results.get("getFaceDetectionConfig", {})

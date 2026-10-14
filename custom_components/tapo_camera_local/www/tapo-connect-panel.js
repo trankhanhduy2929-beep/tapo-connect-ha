@@ -161,6 +161,15 @@ const css = `
   .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; }
   .toolbar select { min-width: 180px; }
   .spacer { flex: 1; }
+  .list .item { flex-wrap: wrap; }
+  .face-actions { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: flex-end; }
+  .face-actions select { min-width: 130px; width: auto; }
+  .btn.small { min-height: 32px; padding: 4px 10px; font-size: 0.85rem; }
+  .btn.danger { border-color: var(--error-color, #f44336); color: var(--error-color, #f44336); }
+  .form-card .field { display: grid; gap: 6px; margin: 12px 0; }
+  .form-card .field label { font-size: 0.85rem; color: var(--secondary-text-color, #727272); }
+  .form-card .actions { display: flex; gap: 8px; margin-top: 4px; }
+  .form-card input[type="file"] { width: 100%; min-height: 40px; }
   .statusline { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; margin-bottom: 16px; font-size: 0.85rem; color: var(--secondary-text-color, #727272); }
   .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; margin-right: 6px; background: var(--secondary-text-color, #727272); vertical-align: middle; }
   .dot.on { background: var(--success-color, #4caf50); }
@@ -214,6 +223,9 @@ class TapoConnectPanel extends HTMLElement {
     this._error = null;
     this._toast = null;
     this._toastTimer = null;
+    this._faceAddOpen = false;
+    this._editingFace = null;
+    this._confirmDelete = null;
     this._onChange = this._onChange.bind(this);
     this._onClick = this._onClick.bind(this);
   }
@@ -298,7 +310,12 @@ class TapoConnectPanel extends HTMLElement {
 
   async _onChange(event) {
     const target = event.target;
-    if (!target || !target.dataset || !target.dataset.entity) return;
+    if (!target || !target.dataset) return;
+    if (target.dataset.role === "face-tag") {
+      await this._submitFaceTag(target.dataset.faceId, target.value);
+      return;
+    }
+    if (!target.dataset.entity) return;
     if (target.dataset.role === "tag") {
       this._tag = target.value;
       await this._loadTab();
@@ -340,6 +357,10 @@ class TapoConnectPanel extends HTMLElement {
       await this._loadTab();
       return;
     }
+    if (action && action.startsWith("face-")) {
+      await this._onFaceAction(action, target);
+      return;
+    }
     if (target.dataset.role === "switch" && target.dataset.entity) {
       const next = target.getAttribute("aria-checked") !== "true";
       target.setAttribute("aria-checked", String(next));
@@ -375,6 +396,114 @@ class TapoConnectPanel extends HTMLElement {
       this._render();
     }
     void entityId;
+  }
+
+  async _onFaceAction(action, target) {
+    const faceId = target.dataset.faceId;
+    if (action === "face-add-open") {
+      this._faceAddOpen = true;
+      this._render();
+      return;
+    }
+    if (action === "face-add-cancel") {
+      this._faceAddOpen = false;
+      this._render();
+      return;
+    }
+    if (action === "face-add-submit") {
+      await this._submitFaceAdd();
+      return;
+    }
+    if (action === "face-add-snapshot") {
+      await this._submitFaceAdd(true);
+      return;
+    }
+    if (action === "face-edit") {
+      this._editingFace = faceId;
+      this._confirmDelete = null;
+      this._render();
+      return;
+    }
+    if (action === "face-edit-cancel") {
+      this._editingFace = null;
+      this._render();
+      return;
+    }
+    if (action === "face-edit-save") {
+      const input = this.shadowRoot.querySelector('[data-role="face-rename"]');
+      await this._submitFaceRename(faceId, input ? input.value : "");
+      return;
+    }
+    if (action === "face-delete") {
+      this._confirmDelete = faceId;
+      this._editingFace = null;
+      this._render();
+      return;
+    }
+    if (action === "face-delete-cancel") {
+      this._confirmDelete = null;
+      this._render();
+      return;
+    }
+    if (action === "face-delete-confirm") {
+      await this._faceCommand("tapo_camera_local/face_delete", { entry_id: this._entryId, face_id: faceId }, "Đã xoá khuôn mặt.");
+    }
+  }
+
+  _readFaceImage() {
+    const input = this.shadowRoot.querySelector('[data-role="face-image"]');
+    const file = input && input.files && input.files[0];
+    if (!file) return Promise.reject(new Error("Hãy chọn ảnh chân dung."));
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(new Error("Không đọc được ảnh."));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async _submitFaceAdd(useSnapshot = false) {
+    const name = (this.shadowRoot.querySelector('[data-role="face-name"]') || {}).value || "";
+    const tag = (this.shadowRoot.querySelector('[data-role="face-tag-new"]') || {}).value || "familiar";
+    const payload = { entry_id: this._entryId, name: name.trim(), tag };
+    if (useSnapshot) {
+      payload.use_snapshot = true;
+    } else {
+      try {
+        payload.image = await this._readFaceImage();
+      } catch (err) {
+        this._showToast(err.message, true);
+        return;
+      }
+    }
+    await this._faceCommand("tapo_camera_local/face_add", payload, "Đã thêm khuôn mặt.");
+  }
+
+  async _submitFaceRename(faceId, name) {
+    await this._faceCommand("tapo_camera_local/face_update", { entry_id: this._entryId, face_id: faceId, name: name.trim() }, "Đã đổi tên.");
+  }
+
+  async _submitFaceTag(faceId, tag) {
+    await this._faceCommand("tapo_camera_local/face_update", { entry_id: this._entryId, face_id: faceId, tag }, "Đã đổi nhóm.");
+  }
+
+  async _faceCommand(type, payload, message) {
+    if (!this._hass || this._busy) return;
+    this._busy = true;
+    this._render();
+    try {
+      await this._call(type, payload);
+      this._showToast(message);
+      this._faceAddOpen = false;
+      this._editingFace = null;
+      this._confirmDelete = null;
+      this._faces = await this._call("tapo_camera_local/faces", { entry_id: this._entryId });
+    } catch (err) {
+      this._showToast(err && err.message ? err.message : "Không thực hiện được lệnh.", true);
+    } finally {
+      this._busy = false;
+      this._render();
+    }
   }
 
   _renderHeader() {
@@ -500,14 +629,10 @@ class TapoConnectPanel extends HTMLElement {
   _renderFaces() {
     const data = this._faces;
     if (!data) return `<div class="loading">Đang tải…</div>`;
-    const banner = `<div class="banner warn"><div class="txt">
-      <div class="title">Quản lý khuôn mặt chưa khả dụng</div>
-      <div class="muted">Thêm khuôn mặt cần ảnh chân dung, mà API hiện tại không trả ảnh. Đổi tên và xoá từng khuôn mặt chưa có lệnh đã kiểm chứng, nên mục này chỉ hiển thị.</div>
-    </div></div>`;
     if (data.mode === "cloud") {
       const people = data.people || [];
       if (!people.length) {
-        return banner + `<div class="empty">Chưa có người quen nào từ thông báo đám mây.</div>`;
+        return `<div class="empty">Chưa có người quen nào từ thông báo đám mây.</div>`;
       }
       const items = people
         .map(
@@ -517,29 +642,96 @@ class TapoConnectPanel extends HTMLElement {
             ${person.tag ? `<span class="badge ${esc(person.tag)}">${esc(tagLabel(person.tag))}</span>` : ""}</div>`
         )
         .join("");
-      return banner + `<section class="card"><h2>Người đã nhận diện</h2><div class="body list">${items}</div></section>`;
+      return `<section class="card"><h2>Người đã nhận diện</h2><div class="body list">${items}</div></section>`;
     }
     if (!data.catalog_available) {
-      return banner + `<div class="empty">Camera chưa trả về danh sách khuôn mặt. Kiểm tra kết nối nội bộ rồi làm mới.</div>`;
+      return `<div class="empty">Camera chưa trả về danh sách khuôn mặt. Kiểm tra kết nối nội bộ rồi làm mới.</div>`;
     }
+    const writable = Boolean(data.face_write);
+    const banner = writable
+      ? ""
+      : `<div class="banner warn"><div class="txt">
+          <div class="title">Face ID chỉ đọc ở chế độ này</div>
+          <div class="muted">Thêm, đổi tên, đổi nhóm và xoá cần kết nối nội bộ (không phải Tapo Control) và camera trả về danh sách khuôn mặt.</div>
+        </div></div>`;
+    const toolbar = `<div class="toolbar">
+      ${writable ? `<button type="button" class="btn primary" data-action="face-add-open"${this._busy ? " disabled" : ""}>Thêm khuôn mặt</button>` : ""}
+      <span class="spacer"></span>
+      <button type="button" class="btn" data-action="refresh"${this._busy ? " disabled" : ""}>Làm mới</button></div>`;
     const faces = data.items || [];
     if (!faces.length) {
-      return banner + `<div class="empty">Camera chưa lưu khuôn mặt nào.</div>`;
+      return banner + toolbar + `<div class="empty">Camera chưa lưu khuôn mặt nào.</div>`;
     }
-    const items = faces
-      .map((face) => {
-        const initial = esc((face.name || "?").slice(0, 1).toUpperCase());
-        const avatar = face.image_url
-          ? `<div class="avatar"><img src="${esc(face.image_url)}" alt="" loading="lazy"></div>`
-          : `<div class="avatar">${initial}</div>`;
-        const seen = face.last_seen ? `Lần cuối: ${esc(formatTime(face.last_seen))}` : "Chưa thấy gần đây";
-        return `<div class="item">${avatar}<div class="grow">
-          <div class="name">${esc(face.name || `Khuôn mặt ${esc(face.face_id)}`)}</div>
-          <div class="meta">${esc(seen)}</div></div>
-          ${face.tag ? `<span class="badge ${esc(face.tag)}">${esc(tagLabel(face.tag))}</span>` : ""}</div>`;
-      })
-      .join("");
-    return banner + `<section class="card"><h2>Khuôn mặt đã lưu (${faces.length})</h2><div class="body list">${items}</div></section>`;
+    const items = faces.map((face) => this._renderFaceItem(face, writable)).join("");
+    const form = writable && this._faceAddOpen ? this._renderAddFaceForm() : "";
+    return banner + toolbar + form + `<section class="card"><h2>Khuôn mặt đã lưu (${faces.length})</h2><div class="body list">${items}</div></section>`;
+  }
+
+  _renderAddFaceForm() {
+    const disabled = this._busy ? " disabled" : "";
+    return `<section class="card form-card"><h2>Thêm khuôn mặt</h2><div class="body">
+      <div class="field"><label for="face-name">Tên</label>
+        <input id="face-name" type="text" data-role="face-name" maxlength="32" placeholder="Ví dụ: An"${disabled}></div>
+      <div class="field"><label for="face-tag-new">Nhóm</label>
+        <select id="face-tag-new" data-role="face-tag-new"${disabled}>
+          <option value="familiar">Người quen</option>
+          <option value="stranger">Người lạ</option>
+        </select></div>
+      <div class="field"><label for="face-image">Ảnh chân dung (JPEG hoặc PNG)</label>
+        <input id="face-image" type="file" accept="image/jpeg,image/png" data-role="face-image"${disabled}></div>
+      <div class="actions">
+        <button type="button" class="btn primary" data-action="face-add-submit"${disabled}>Thêm từ ảnh</button>
+        <button type="button" class="btn" data-action="face-add-snapshot"${disabled}>Chụp từ camera</button>
+        <button type="button" class="btn" data-action="face-add-cancel"${disabled}>Huỷ</button>
+      </div>
+    </div></section>`;
+  }
+
+  _renderFaceItem(face, writable) {
+    const id = face.face_id;
+    const initial = esc((face.name || "?").slice(0, 1).toUpperCase());
+    const avatar = face.image_url
+      ? `<div class="avatar"><img src="${esc(face.image_url)}" alt="" loading="lazy"></div>`
+      : `<div class="avatar">${initial}</div>`;
+    const disabled = this._busy ? " disabled" : "";
+    const editing = writable && String(this._editingFace) === String(id);
+    const confirming = writable && String(this._confirmDelete) === String(id);
+    if (!writable) {
+      const seen = face.last_seen ? `Lần cuối: ${esc(formatTime(face.last_seen))}` : "Chưa thấy gần đây";
+      return `<div class="item">${avatar}<div class="grow">
+        <div class="name">${esc(face.name || `Khuôn mặt ${esc(id)}`)}</div>
+        <div class="meta">${esc(seen)}</div></div>
+        ${face.tag ? `<span class="badge ${esc(face.tag)}">${esc(tagLabel(face.tag))}</span>` : ""}</div>`;
+    }
+    if (editing) {
+      return `<div class="item">${avatar}
+        <div class="grow"><input type="text" data-role="face-rename" maxlength="32" value="${esc(face.name || "")}" aria-label="Tên mới"${disabled}></div>
+        <div class="face-actions">
+          <button type="button" class="btn small primary" data-action="face-edit-save" data-face-id="${esc(id)}"${disabled}>Lưu</button>
+          <button type="button" class="btn small" data-action="face-edit-cancel"${disabled}>Huỷ</button>
+        </div></div>`;
+    }
+    if (confirming) {
+      return `<div class="item">${avatar}
+        <div class="grow"><div class="name">${esc(face.name || `Khuôn mặt ${esc(id)}`)}</div>
+        <div class="meta">Xoá khuôn mặt này khỏi camera?</div></div>
+        <div class="face-actions">
+          <button type="button" class="btn small danger" data-action="face-delete-confirm" data-face-id="${esc(id)}"${disabled}>Xác nhận xoá</button>
+          <button type="button" class="btn small" data-action="face-delete-cancel"${disabled}>Huỷ</button>
+        </div></div>`;
+    }
+    const seen = face.last_seen ? `Lần cuối: ${esc(formatTime(face.last_seen))}` : "Chưa thấy gần đây";
+    return `<div class="item">${avatar}
+      <div class="grow"><div class="name">${esc(face.name || `Khuôn mặt ${esc(id)}`)}</div>
+      <div class="meta">${esc(seen)}</div></div>
+      <div class="face-actions">
+        <select data-role="face-tag" data-face-id="${esc(id)}" aria-label="Nhóm của ${esc(face.name || id)}"${disabled}>
+          <option value="familiar"${face.tag === "familiar" ? " selected" : ""}>Người quen</option>
+          <option value="stranger"${face.tag === "stranger" ? " selected" : ""}>Người lạ</option>
+        </select>
+        <button type="button" class="btn small" data-action="face-edit" data-face-id="${esc(id)}"${disabled}>Đổi tên</button>
+        <button type="button" class="btn small danger" data-action="face-delete" data-face-id="${esc(id)}"${disabled}>Xoá</button>
+      </div></div>`;
   }
 
   _renderHistory() {

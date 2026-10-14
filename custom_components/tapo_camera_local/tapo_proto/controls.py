@@ -159,7 +159,25 @@ ACTIONS = {
 }
 
 
+FACE_WRITES = ("setFaceInfo", "doFaceInfoAdd")
+
+
+def _valid_face_write(method: str, params: dict) -> bool:
+    try:
+        from .. import face_ops
+    except ImportError:  # imported as a top-level module by the test harness
+        import face_ops
+
+    if method == "setFaceInfo":
+        return face_ops.is_set_face_payload(params)
+    if method == "doFaceInfoAdd":
+        return face_ops.is_add_face_payload(params)
+    return False
+
+
 def validate_write(method: str, params: dict) -> None:
+    if method in FACE_WRITES and _valid_face_write(method, params):
+        return
     for setting in SETTINGS:
         if method != setting.method:
             continue
