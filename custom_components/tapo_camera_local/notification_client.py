@@ -130,7 +130,7 @@ class NotificationClient:
         headers = signed_headers(payload, NOTIFICATION_PATH, self.profile["access_key"], self.profile["signing_secret"], str(uuid.uuid4()))
         params = {"appName": APP_TYPE, "appVer": "3.18.506", "termID": self.profile["terminal"], "locale": "en_US", "token": self.profile["access_token"]}
         try:
-            with self.session.post(self.base + NOTIFICATION_PATH, data=payload, headers=headers, params=params, timeout=(8, 20), allow_redirects=False, stream=True) as response:
+            with self.session.post(self.base + NOTIFICATION_PATH, data=payload, headers=headers, params=params, timeout=(4, 10), allow_redirects=False, stream=True) as response:
                 if response.status_code in (401, 403):
                     self.auth_failed = True
                     raise NotificationAuthError("Cloud session rejected; import a new MFA-verified profile")
