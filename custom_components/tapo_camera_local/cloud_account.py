@@ -152,7 +152,7 @@ class CloudGateway:
         if token:
             params["token"] = token
         try:
-            with self.session.post(base + path, data=payload, headers=headers, params=params, timeout=(4, 8), allow_redirects=False, stream=True) as response:
+            with self.session.post(base + path, data=payload, headers=headers, params=params, timeout=(8, 20), allow_redirects=False, stream=True) as response:
                 if response.status_code in (401, 403):
                     raise NotificationAuthError("Cloud authorization rejected")
                 if response.status_code == 429:

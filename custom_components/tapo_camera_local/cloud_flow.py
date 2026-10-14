@@ -26,10 +26,7 @@ class CloudLoginFlow:
         self._cloud_busy = True
         try:
             self._cloud_task = self.hass.async_add_executor_job(function, *args)
-            try:
-                return await asyncio.wait_for(asyncio.shield(self._cloud_task), timeout=self.CLOUD_CALL_SECONDS)
-            except asyncio.TimeoutError:
-                raise CloudAccountError("cloud_cannot_connect") from None
+            return await asyncio.shield(self._cloud_task)
         finally:
             self._cloud_busy = False
 
