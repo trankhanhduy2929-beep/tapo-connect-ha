@@ -1289,6 +1289,9 @@
       },
       "cloud_refresh": {
         "name": "Check Tapo notifications now"
+      },
+      "scan_cameras": {
+        "name": "Scan Tapo account for new cameras"
       }
     },
     "camera": {

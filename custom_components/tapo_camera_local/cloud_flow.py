@@ -122,7 +122,9 @@ class CloudLoginFlow:
         }))
 
     def _camera_configured(self, camera_id) -> bool:
-        return self.hass.config_entries.async_entry_for_domain_unique_id(DOMAIN, f"cloud_notifications:{camera_id}") is not None
+        from .cloud_provision import camera_configured
+
+        return camera_configured(self.hass, camera_id)
 
     async def async_step_cloud_device(self, user_input=None):
         """Finish sign-in: add every camera in the account without a picker."""
@@ -170,40 +172,11 @@ class CloudLoginFlow:
         return result
 
     async def _cloud_add_cameras(self, account, camera_ids):
-        from types import MappingProxyType
+        from .cloud_provision import async_add_camera_entry
 
-        from homeassistant.config_entries import ConfigEntry
-
-        from .license_client import LICENSE_INSTANCE
-
+        license_identifier = getattr(self, "_license_identifier", None)
         for camera_id in camera_ids:
-            try:
-                await self.hass.async_add_executor_job(account.check_camera, camera_id)
-                identifier = uuid.uuid4().hex
-                store = CloudSessionStore(self.hass, identifier)
-                await store.async_save(account.session_data)
-                model = ((getattr(account, "device_models", {}) or {}).get(camera_id) or "").strip()
-                data = {CONF_CONNECTION_MODE: MODE_CLOUD_NOTIFICATIONS, "camera_id": camera_id, "cloud_credentials_id": identifier, "cloud_email": account.email}
-                if model:
-                    data["cloud_model"] = model
-                if getattr(self, "_license_identifier", None):
-                    data[LICENSE_INSTANCE] = self._license_identifier
-                    data["license_required"] = True
-                entry = ConfigEntry(
-                    data=data,
-                    discovery_keys=MappingProxyType({}),
-                    domain=DOMAIN,
-                    minor_version=self.MINOR_VERSION,
-                    options={},
-                    source="user",
-                    subentries_data=None,
-                    title=f"Tapo {model or 'C260'} · Cloud",
-                    unique_id=f"cloud_notifications:{camera_id}",
-                    version=self.VERSION,
-                )
-                await self.hass.config_entries.async_add(entry)
-            except Exception:  # one camera must not block the others
-                _LOGGER.exception("Không thêm được camera cloud %s", camera_id[-6:])
+            await async_add_camera_entry(self.hass, account, camera_id, account.email, license_identifier)
 
     async def _cloud_finish(self, account, camera_id, entry):
         from .license_client import LICENSE_INSTANCE

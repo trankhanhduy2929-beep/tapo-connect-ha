@@ -19,9 +19,25 @@ def action_keys(snapshot):
     return keys
 
 
+def _is_scan_host(hass, entry):
+    email = entry.data.get("cloud_email")
+    if not email:
+        return True
+    peers = sorted(
+        other.entry_id
+        for other in hass.config_entries.async_entries(DOMAIN)
+        if other.data.get(CONF_CONNECTION_MODE) == MODE_CLOUD_NOTIFICATIONS and other.data.get("cloud_email") == email
+    )
+    return bool(peers) and peers[0] == entry.entry_id
+
+
 async def async_setup_entry(hass, entry, async_add_entities):
     if entry.data.get(CONF_CONNECTION_MODE) == MODE_CLOUD_NOTIFICATIONS:
-        async_add_entities([NotificationRefreshButton(hass.data[DOMAIN][entry.entry_id]["notification_coordinator"])])
+        coordinator = hass.data[DOMAIN][entry.entry_id]["notification_coordinator"]
+        entities = [NotificationRefreshButton(coordinator)]
+        if _is_scan_host(hass, entry):
+            entities.append(ScanCamerasButton(hass, entry, coordinator))
+        async_add_entities(entities)
     coordinator = coordinator_for(hass, entry)
     added = set()
 
@@ -58,6 +74,30 @@ class NotificationRefreshButton(CoordinatorEntity, ButtonEntity):
 
     async def async_press(self) -> None:
         await self.coordinator.async_refresh_now()
+
+
+class ScanCamerasButton(CoordinatorEntity, ButtonEntity):
+    """One press adds any camera recently added to the Tapo account."""
+
+    _attr_has_entity_name = True
+    _attr_translation_key = "scan_cameras"
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+
+    def __init__(self, hass, entry, coordinator):
+        super().__init__(coordinator)
+        self.hass = hass
+        self.entry = entry
+        self._attr_unique_id = f"{coordinator.device_id}_scan_cameras"
+        self._attr_device_info = DeviceInfo(identifiers={(DOMAIN, coordinator.device_id)}, manufacturer="TP-Link", model=coordinator.device_model or "C260", name=coordinator.device_name)
+
+    @property
+    def available(self):
+        return self.coordinator.last_update_success
+
+    async def async_press(self) -> None:
+        from .cloud_provision import async_scan_cameras
+
+        await async_scan_cameras(self.hass, self.entry)
 
 
 class TapoActionButton(TapoEntity, ButtonEntity):

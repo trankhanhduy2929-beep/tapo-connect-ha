@@ -208,6 +208,15 @@ class CloudAccount:
         self.device_models = {}
         self.mfa_type = MFA_EMAIL
 
+    @classmethod
+    def from_session(cls, session: dict):
+        """Reuse a stored owner session to list devices (e.g. camera scan)."""
+        account = cls()
+        account.session_data = validated_session(session)
+        account.terminal = account.session_data["terminal"]
+        account.phase = "authenticated"
+        return account
+
     def discard(self):
         if self.session_data is not None:
             self.session_data.clear()

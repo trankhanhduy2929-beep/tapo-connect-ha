@@ -1352,6 +1352,9 @@
       },
       "cloud_refresh": {
         "name": "Kiểm tra thông báo Tapo ngay"
+      },
+      "scan_cameras": {
+        "name": "Quét tài khoản Tapo tìm camera mới"
       }
     },
     "camera": {
