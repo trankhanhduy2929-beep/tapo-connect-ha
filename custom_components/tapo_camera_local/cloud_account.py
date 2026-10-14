@@ -62,6 +62,9 @@ def secret_text(value) -> str:
     return value
 
 
+PHONE_USERNAME = re.compile(r"^\+\d{1,3}-[1-9]\d{6,14}$")
+
+
 def normalize_username(value: str) -> str:
     text = " ".join(value.split())[:254]
     if not text:
@@ -70,19 +73,28 @@ def normalize_username(value: str) -> str:
         if not re.fullmatch(r"[^\s@]+@[^\s@]+\.[^\s@]+", text):
             raise ValueError("invalid email")
         return text
-    digits = re.sub(r"[ ().-]", "", text)
+    if PHONE_USERNAME.fullmatch(text):
+        return text
+    if re.fullmatch(r"\d{1,3}-[1-9]\d{6,14}", text):
+        return "+" + text
+    stripped = re.sub(r"[ ().-]", "", text)
+    if not re.fullmatch(r"\+?\d+", stripped):
+        raise ValueError("unexpected characters in phone")
+    digits = stripped[1:] if stripped.startswith("+") else stripped
     if digits.startswith("00"):
-        digits = "+" + digits[2:]
-    elif not digits.startswith("+"):
-        if digits.startswith("0"):
-            digits = "+84" + digits[1:]
-        elif digits.startswith("84") and 9 <= len(digits) <= 15:
-            digits = "+" + digits
-        else:
-            digits = "+" + digits
-    if not re.fullmatch(r"\+[1-9][0-9]{5,14}", digits):
+        digits = digits[2:]
+    if digits.startswith("0"):
+        national = digits[1:]
+        candidate = f"+84-{national}"
+    elif digits.startswith("84"):
+        candidate = f"+84-{digits[2:]}"
+    elif text.startswith("+"):
+        raise ValueError("phone needs country code and hyphen, e.g. +65-91234567")
+    else:
+        raise ValueError("phone needs country code, e.g. 0912345678 or +84-912345678")
+    if not PHONE_USERNAME.fullmatch(candidate):
         raise ValueError("invalid phone")
-    return digits
+    return candidate
 
 
 def validated_session(value: dict) -> dict:
@@ -154,8 +166,10 @@ class CloudGateway:
         except (requests.RequestException, OSError, ValueError, RecursionError):
             raise CloudAccountError("cloud_cannot_connect") from None
         if not isinstance(data, dict) or type(data.get("error_code")) is not int:
+            _LOGGER.warning("Tapo cloud %s returned an unexpected envelope: type=%s keys=%s", path, type(data).__name__, sorted(data)[:10] if isinstance(data, dict) else "-")
             raise CloudAccountError("cloud_bad_response")
         if code := data["error_code"]:
+            _LOGGER.warning("Tapo cloud %s rejected the request: error_code=%s", path, code)
             if code in AUTH_CODES:
                 raise NotificationAuthError("Cloud session rejected")
             message = data.get("msg", data.get("message", ""))

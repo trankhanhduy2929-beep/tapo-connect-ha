@@ -71,7 +71,7 @@
       },
       "cloud_login": {
         "title": "Đăng nhập tài khoản Tapo",
-        "description": "Dùng email hoặc số điện thoại đăng nhập ứng dụng Tapo (số VN dạng 09… hoặc +84…), không phải tài khoản HA hoặc Camera Account. Không cần file JSON hay Tapo Control. Bấm Tiếp tục cho phép gửi một email xác minh nếu Tapo yêu cầu MFA. Không lưu mật khẩu/OTP; HA tự lưu phiên riêng, hãy bảo vệ HA và backup. Mã quốc gia tùy chọn, ví dụ VN.",
+        "description": "Dùng email hoặc số điện thoại đăng nhập ứng dụng Tapo (số VN nhập 09… sẽ dùng dạng +84-09…), không phải tài khoản HA hoặc Camera Account. Không cần file JSON hay Tapo Control. Bấm Tiếp tục cho phép gửi một email xác minh nếu Tapo yêu cầu MFA. Không lưu mật khẩu/OTP; HA tự lưu phiên riêng, hãy bảo vệ HA và backup. Mã quốc gia tùy chọn, ví dụ VN.",
         "data": {
           "email": "Email hoặc số điện thoại Tapo",
           "password": "Mật khẩu Tapo",

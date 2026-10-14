@@ -71,7 +71,7 @@
       },
       "cloud_login": {
         "title": "Sign in to your Tapo account",
-        "description": "Use the email or phone number you sign in with in the Tapo app (VN phone: 09... or +84...), not your HA or Camera Account. No JSON file or Tapo Control needed. Continuing authorizes one verification email if Tapo requires MFA. Password and OTP are not saved. HA stores the session privately; protect HA access and backups. Region is optional (e.g. VN).",
+        "description": "Use the email or phone number you sign in with in the Tapo app (VN phone: enter 09... and it uses +84-09...), not your HA or Camera Account. No JSON file or Tapo Control needed. Continuing authorizes one verification email if Tapo requires MFA. Password and OTP are not saved. HA stores the session privately; protect HA access and backups. Region is optional (e.g. VN).",
         "data": {
           "email": "Tapo email or phone number",
           "password": "Tapo password",
