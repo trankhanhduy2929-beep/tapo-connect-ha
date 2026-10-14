@@ -91,7 +91,13 @@ async def _async_license_form(flow, user_input=None, entry=None):
         if user_input is not None:
             try:
                 reused = entry is None and bool(key) and index.get(key_hash) == identifier
-                if not reused and any(other.data.get(LICENSE_INSTANCE) == identifier and (entry is None or other.entry_id != entry.entry_id) for other in flow.hass.config_entries.async_entries(DOMAIN)):
+                conflicting = any(
+                    other.data.get(LICENSE_INSTANCE) == identifier
+                    and (entry is None or other.entry_id != entry.entry_id)
+                    and not (entry is not None and _shares_cloud_account(entry, other))
+                    for other in flow.hass.config_entries.async_entries(DOMAIN)
+                )
+                if not reused and conflicting:
                     raise LicenseError("license_in_use")
                 token = await request_lease(async_get_clientsession(flow.hass), policy, data["identity"], key, "activate")
                 await store.save({**data, "key": key, "lease": token})
