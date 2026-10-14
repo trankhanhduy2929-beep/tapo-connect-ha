@@ -185,9 +185,10 @@ class CloudGateway:
                 raise NotificationAuthError("Cloud renewal rejected; sign in through Home Assistant")
             raise CloudAccountError("cloud_bad_response")
         result = data.get("result")
-        if result is None and path == EMAIL_PATH:
-            return {}
+        if path in (EMAIL_PATH, SMS_PATH):
+            return result if isinstance(result, dict) else {}
         if not isinstance(result, dict):
+            _LOGGER.warning("Tapo cloud %s returned an unexpected result: type=%s keys=%s", path, type(result).__name__, sorted(data)[:10])
             raise CloudAccountError("cloud_bad_response")
         return result
 
