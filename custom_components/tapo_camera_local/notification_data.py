@@ -42,6 +42,7 @@ CORE_CATEGORIES = (
 )
 NOTIFICATION_CATEGORIES = tuple(dict.fromkeys(NOTIFICATION_TYPES.values()))
 RECENT_SECONDS = 60
+RECENT_EVENTS_MAX = 200
 
 
 def notification_time(value, now: float) -> datetime | None:
@@ -102,6 +103,7 @@ class NotificationHistory:
         self.latest_notification = None
         self.categories = {}
         self.people = {}
+        self.recent = OrderedDict()
         self.seen = OrderedDict()
         self.initialized = False
         self.count = 0
@@ -126,21 +128,32 @@ class NotificationHistory:
                 previous = self.people.get(person_key)
                 if (previous is None or event["notified_at"] > previous["notified_at"]) and (previous is not None or len(self.people) < 200):
                     self.people[person_key] = event
+            self.recent[event["message_id"]] = event
             if event["message_id"] not in self.seen:
                 if self.initialized and event["notified_at"].timestamp() >= now - 120:
                     emitted.append(event)
                 self.seen[event["message_id"]] = None
         while len(self.seen) > 2000:
             self.seen.popitem(last=False)
+        while len(self.recent) > RECENT_EVENTS_MAX:
+            self.recent.popitem(last=False)
         self.initialized = True
         return emitted
 
+    def events(self, *, tag: str | None = None, limit: int = RECENT_EVENTS_MAX) -> list[dict]:
+        """Newest-first recent events, optionally filtered by tag."""
+        limit = max(1, min(RECENT_EVENTS_MAX, int(limit)))
+        items = [event for event in self.recent.values() if tag is None or event["tag"] == tag]
+        items.sort(key=lambda event: (event["notified_at"], event["message_id"]), reverse=True)
+        return items[:limit]
+
     def dump(self, camera_id: str) -> dict:
-        events = {event["message_id"]: event for event in [*self.categories.values(), *self.people.values()]}
+        events = {event["message_id"]: event for event in [*self.recent.values(), *self.categories.values(), *self.people.values()]}
+        ordered = sorted(events.values(), key=lambda event: (event["notified_at"], event["message_id"]))[-RECENT_EVENTS_MAX:]
         return {"version": 1, "camera_id": camera_id, "notifications": [
             {"msgId": event["message_id"], "msgType": event["message_type"], "time": int(event["notified_at"].timestamp() * 1000),
              "attachments": {"deviceId": camera_id, "personName": event["name"], "faceId": event["face_id"]}}
-            for event in events.values()
+            for event in ordered
         ]}
 
     def restore(self, data, camera_id: str, now: float):

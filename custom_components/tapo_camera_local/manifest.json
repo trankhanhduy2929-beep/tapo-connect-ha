@@ -5,7 +5,7 @@
   ],
   "name": "Tapo Connect",
   "documentation": "https://github.com/trankhanhduy2929-beep/tapo-connect-ha",
-  "version": "0.12.13",
+  "version": "0.13.0",
   "integration_type": "device",
   "iot_class": "cloud_polling",
   "config_flow": true,
@@ -20,7 +20,11 @@
     "zeroconf"
   ],
   "after_dependencies": [
-    "tapo_control"
+    "tapo_control",
+    "frontend",
+    "http",
+    "websocket_api",
+    "panel_custom"
   ],
   "issue_tracker": "https://github.com/trankhanhduy2929-beep/tapo-connect-ha/issues"
 }

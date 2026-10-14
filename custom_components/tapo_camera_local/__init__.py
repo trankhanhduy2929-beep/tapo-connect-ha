@@ -53,6 +53,22 @@ if IMAGE_PLATFORM is not None:
 type TapoConfigEntry = ConfigEntry[dict[str, object]]
 
 
+async def _ensure_panel(hass: HomeAssistant) -> None:
+    """The panel is optional; never let it block an entry from loading."""
+    try:
+        from .panel import async_setup_panel
+
+        await async_setup_panel(hass)
+    except Exception as err:  # noqa: BLE001
+        _LOGGER.debug("Tapo Connect panel could not be registered: %s", err)
+
+
+async def async_setup(hass: HomeAssistant, config: dict) -> bool:
+    """Serve the management panel; camera entries load separately."""
+    await _ensure_panel(hass)
+    return True
+
+
 def platforms_for(entry: ConfigEntry) -> list[Platform]:
     if entry.data.get(CONF_CONNECTION_MODE) == MODE_CLOUD_NOTIFICATIONS:
         return [Platform.SENSOR, Platform.BINARY_SENSOR, Platform.BUTTON, Platform.SWITCH, Platform.NUMBER, Platform.SELECT, Platform.TEXT]
@@ -70,6 +86,7 @@ def platforms_for(entry: ConfigEntry) -> list[Platform]:
 
 async def async_setup_entry(hass: HomeAssistant, entry: TapoConfigEntry) -> bool:
     """Connect to one camera and register its entities."""
+    await _ensure_panel(hass)
     from .license_client import LICENSE_INSTANCE
     from .license_policy_locked import load_policy
 
