@@ -14,12 +14,11 @@ import io
 from typing import Any
 
 try:
-    from .face import _image_type
+    from .face import FACE_TAGS, _image_type
 except ImportError:  # imported as a top-level module by the test harness
-    from face import _image_type
+    from face import FACE_TAGS, _image_type
 
 MAX_FACE_NAME_BYTES = 32
-FACE_TAGS = ("familiar", "stranger")
 DEFAULT_PIC_FORMAT = 2
 MAX_UPLOAD_BYTES = 5 * 1024 * 1024
 JPEG_QUALITY = 50
@@ -45,7 +44,7 @@ def normalize_name(value: Any) -> str:
 
 def normalize_tag(value: Any) -> str:
     if value not in FACE_TAGS:
-        raise ValueError("Nhóm chỉ nhận Người quen hoặc Người lạ")
+        raise ValueError("Nhóm khuôn mặt không hợp lệ")
     return str(value)
 
 

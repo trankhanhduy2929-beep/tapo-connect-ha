@@ -2,7 +2,7 @@
 
 # Tapo Connect — Camera Tapo trên Home Assistant
 
-**Phiên bản 0.14.0 · Tapo C260 qua cloud · Tiếng Việt · Có license**
+**Phiên bản 0.15.0 · Tapo C260 qua cloud · Tiếng Việt · Có license**
 
 Custom integration đưa camera Tapo C260 lên Home Assistant qua **cloud TP-Link**: đọc thông báo nhận diện (người quen/người lạ/vật nuôi/xe/…), điều khiển ~48 setting (LED, riêng tư, ghi hình, PTZ, preset, lịch ghi, độ nhạy AI, ngày/đêm…). Không cần cùng LAN, không cần Camera Account, không cần cài mồi Tapo Control.
 
@@ -124,7 +124,7 @@ Sau khi thêm entry, vào **Thiết bị → C260 → Thực thể**:
 Tích hợp kèm một bảng ở **sidebar** HA tên **Tapo Connect** (biểu tượng camera), không cần cài thêm gì:
 
 - **Cài đặt**: chọn camera rồi chỉnh switch/number/select/text/button, xem trạng thái (nhiệt độ, chuyển động, tín hiệu…) và tình trạng license. Lệnh đi qua đúng entity/service của tích hợp nên vẫn có kiểm tra hợp lệ.
-- **Face ID**: xem danh sách khuôn mặt đã lưu và người đã nhận diện. Mục **thêm/đổi tên/xoá khuôn mặt chưa khả dụng** (chưa có API đã kiểm chứng), bảng hiển thị ghi chú rõ.
+- **Face ID**: xem danh sách khuôn mặt đã lưu, thêm từ ảnh, đổi tên, đổi nhóm (Gia đình/Bạn bè/Giao hàng/Đồng nghiệp/Hàng xóm/Bạn học/Người lạ) và xoá — chạy trực tiếp qua cloud, không cần cùng LAN. Việc thêm khuôn mặt mới chưa được kiểm chứng trên thiết bị thật; đọc và đổi tên đã xác minh.
 - **Lịch sử**: danh sách sự kiện thông báo (bản cloud) hoặc lần nhận diện (bản local), lọc theo loại.
 
 Bảng dùng giao diện gốc của HA (tự theo sáng/tối) và yêu cầu **HA Core 2026.9.0+** như phần còn lại.

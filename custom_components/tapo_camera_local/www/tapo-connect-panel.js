@@ -2,6 +2,12 @@
 // Styling uses Home Assistant theme tokens only; flat by default.
 
 const TAG_LABELS = {
+  family: "Gia đình",
+  friend: "Bạn bè",
+  courier: "Người giao hàng",
+  colleague: "Đồng nghiệp",
+  neighbor: "Hàng xóm",
+  schoolmate: "Bạn học",
   familiar: "Người quen",
   stranger: "Người lạ",
   person: "Có người",
@@ -38,6 +44,11 @@ const HISTORY_TAGS = [
   "intrusion", "line_crossing", "package_delivered", "package_removed",
   "doorbell", "loitering", "anti_theft",
 ];
+
+const FACE_TAGS = ["family", "friend", "courier", "colleague", "neighbor", "schoolmate", "stranger"];
+
+const faceTagOptions = (selected) =>
+  FACE_TAGS.map((tag) => `<option value="${tag}"${tag === selected ? " selected" : ""}>${esc(TAG_LABELS[tag] || tag)}</option>`).join("");
 
 const TABS = [
   { id: "settings", label: "Cài đặt" },
@@ -156,7 +167,13 @@ const css = `
     border: 1px solid var(--divider-color, #e0e0e0); color: var(--secondary-text-color, #727272);
     background: var(--secondary-background-color, rgba(0,0,0,0.04)); white-space: nowrap;
   }
-  .badge.familiar { border-color: var(--success-color, #4caf50); color: var(--success-color, #4caf50); }
+  .badge.familiar,
+  .badge.family,
+  .badge.friend,
+  .badge.courier,
+  .badge.colleague,
+  .badge.neighbor,
+  .badge.schoolmate { border-color: var(--success-color, #4caf50); color: var(--success-color, #4caf50); }
   .badge.stranger { border-color: var(--warning-color, #ff9800); color: var(--warning-color, #ff9800); }
   .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; }
   .toolbar select { min-width: 180px; }
@@ -464,7 +481,7 @@ class TapoConnectPanel extends HTMLElement {
 
   async _submitFaceAdd(useSnapshot = false) {
     const name = (this.shadowRoot.querySelector('[data-role="face-name"]') || {}).value || "";
-    const tag = (this.shadowRoot.querySelector('[data-role="face-tag-new"]') || {}).value || "familiar";
+    const tag = (this.shadowRoot.querySelector('[data-role="face-tag-new"]') || {}).value || "family";
     const payload = { entry_id: this._entryId, name: name.trim(), tag };
     if (useSnapshot) {
       payload.use_snapshot = true;
@@ -629,7 +646,7 @@ class TapoConnectPanel extends HTMLElement {
   _renderFaces() {
     const data = this._faces;
     if (!data) return `<div class="loading">Đang tải…</div>`;
-    if (data.mode === "cloud") {
+    if (data.mode === "cloud" && !data.catalog_available) {
       const people = data.people || [];
       if (!people.length) {
         return `<div class="empty">Chưa có người quen nào từ thông báo đám mây.</div>`;
@@ -645,14 +662,14 @@ class TapoConnectPanel extends HTMLElement {
       return `<section class="card"><h2>Người đã nhận diện</h2><div class="body list">${items}</div></section>`;
     }
     if (!data.catalog_available) {
-      return `<div class="empty">Camera chưa trả về danh sách khuôn mặt. Kiểm tra kết nối nội bộ rồi làm mới.</div>`;
+      return `<div class="empty">Camera chưa trả về danh sách khuôn mặt. Kiểm tra kết nối rồi làm mới.</div>`;
     }
     const writable = Boolean(data.face_write);
     const banner = writable
       ? ""
       : `<div class="banner warn"><div class="txt">
           <div class="title">Face ID chỉ đọc ở chế độ này</div>
-          <div class="muted">Thêm, đổi tên, đổi nhóm và xoá cần kết nối nội bộ (không phải Tapo Control) và camera trả về danh sách khuôn mặt.</div>
+          <div class="muted">Thêm, đổi tên, đổi nhóm và xoá cần camera trả về danh sách khuôn mặt và kết nối cho phép ghi.</div>
         </div></div>`;
     const toolbar = `<div class="toolbar">
       ${writable ? `<button type="button" class="btn primary" data-action="face-add-open"${this._busy ? " disabled" : ""}>Thêm khuôn mặt</button>` : ""}
@@ -669,19 +686,19 @@ class TapoConnectPanel extends HTMLElement {
 
   _renderAddFaceForm() {
     const disabled = this._busy ? " disabled" : "";
+    const snapshot = this._faces && this._faces.face_snapshot
+      ? `<button type="button" class="btn" data-action="face-add-snapshot"${disabled}>Chụp từ camera</button>`
+      : "";
     return `<section class="card form-card"><h2>Thêm khuôn mặt</h2><div class="body">
       <div class="field"><label for="face-name">Tên</label>
         <input id="face-name" type="text" data-role="face-name" maxlength="32" placeholder="Ví dụ: An"${disabled}></div>
       <div class="field"><label for="face-tag-new">Nhóm</label>
-        <select id="face-tag-new" data-role="face-tag-new"${disabled}>
-          <option value="familiar">Người quen</option>
-          <option value="stranger">Người lạ</option>
-        </select></div>
+        <select id="face-tag-new" data-role="face-tag-new"${disabled}>${faceTagOptions("family")}</select></div>
       <div class="field"><label for="face-image">Ảnh chân dung (JPEG hoặc PNG)</label>
         <input id="face-image" type="file" accept="image/jpeg,image/png" data-role="face-image"${disabled}></div>
       <div class="actions">
         <button type="button" class="btn primary" data-action="face-add-submit"${disabled}>Thêm từ ảnh</button>
-        <button type="button" class="btn" data-action="face-add-snapshot"${disabled}>Chụp từ camera</button>
+        ${snapshot}
         <button type="button" class="btn" data-action="face-add-cancel"${disabled}>Huỷ</button>
       </div>
     </div></section>`;
@@ -725,10 +742,7 @@ class TapoConnectPanel extends HTMLElement {
       <div class="grow"><div class="name">${esc(face.name || `Khuôn mặt ${esc(id)}`)}</div>
       <div class="meta">${esc(seen)}</div></div>
       <div class="face-actions">
-        <select data-role="face-tag" data-face-id="${esc(id)}" aria-label="Nhóm của ${esc(face.name || id)}"${disabled}>
-          <option value="familiar"${face.tag === "familiar" ? " selected" : ""}>Người quen</option>
-          <option value="stranger"${face.tag === "stranger" ? " selected" : ""}>Người lạ</option>
-        </select>
+        <select data-role="face-tag" data-face-id="${esc(id)}" aria-label="Nhóm của ${esc(face.name || id)}"${disabled}>${faceTagOptions(face.tag)}</select>
         <button type="button" class="btn small" data-action="face-edit" data-face-id="${esc(id)}"${disabled}>Đổi tên</button>
         <button type="button" class="btn small danger" data-action="face-delete" data-face-id="${esc(id)}"${disabled}>Xoá</button>
       </div></div>`;

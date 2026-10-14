@@ -16,7 +16,7 @@ from homeassistant.components import websocket_api
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 
-from . import panel_data
+from . import face, face_ops, panel_data
 from .const import CONF_TAPO_CONTROL_ENTRY, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
@@ -83,12 +83,22 @@ async def async_faces(hass: HomeAssistant, entry_id: str) -> dict:
     if panel_data.is_cloud(entry):
         notifications = runtime.get("notification_coordinator")
         people = notifications.history.people if notifications is not None else {}
+        coordinator = runtime.get("coordinator")
+        state: dict = {}
+        catalog_available = False
+        if coordinator is not None:
+            try:
+                state = face.face_state(await coordinator.async_face_snapshot())
+                catalog_available = bool(state.get("catalog_available"))
+            except HomeAssistantError:
+                state = {}
         return {
             "mode": "cloud",
-            "catalog_available": False,
-            "face_write": False,
+            "catalog_available": catalog_available,
+            "face_write": _face_writable(entry, runtime),
+            "face_snapshot": False,
             "people": panel_data.person_items(people),
-            "items": [],
+            "items": panel_data.face_items(state, {}) if catalog_available else [],
         }
     coordinator = runtime.get("coordinator")
     state = getattr(getattr(coordinator, "face_history", None), "state", {}) or {}
@@ -99,6 +109,7 @@ async def async_faces(hass: HomeAssistant, entry_id: str) -> dict:
         "tracking_available": bool(state.get("tracking_available")),
         "face_count": state.get("face_count"),
         "face_write": _face_writable(entry, runtime),
+        "face_snapshot": True,
         "items": panel_data.face_items(state, images),
     }
 
@@ -119,36 +130,53 @@ def _face_images(hass: HomeAssistant, entry) -> dict[str, str]:
 
 
 def _face_writable(entry, runtime: dict) -> bool:
-    if panel_data.is_cloud(entry) or entry.data.get(CONF_TAPO_CONTROL_ENTRY):
+    if entry.data.get(CONF_TAPO_CONTROL_ENTRY):
         return False
     coordinator = runtime.get("coordinator")
-    if coordinator is None or getattr(coordinator, "camera", None) is None:
+    if coordinator is None:
+        return False
+    if panel_data.is_cloud(entry):
+        return True
+    if getattr(coordinator, "camera", None) is None:
         return False
     state = getattr(getattr(coordinator, "face_history", None), "state", {}) or {}
     return bool(state.get("catalog_available"))
 
 
-def _face_write_coordinator(hass: HomeAssistant, entry_id: str):
+async def _face_write_coordinator(hass: HomeAssistant, entry_id: str):
     entry = _entry_or_raise(hass, entry_id)
-    if panel_data.is_cloud(entry):
-        raise HomeAssistantError("Chế độ cloud không hỗ trợ ghi Face ID")
     if entry.data.get(CONF_TAPO_CONTROL_ENTRY):
         raise HomeAssistantError("Chế độ Tapo Control chỉ cho phép đọc")
     coordinator = _runtime(hass, entry).get("coordinator")
-    if coordinator is None or getattr(coordinator, "camera", None) is None:
+    if coordinator is None:
+        raise HomeAssistantError("Không tìm thấy camera")
+    if panel_data.is_cloud(entry):
+        await coordinator.async_ensure_camera()
+    elif getattr(coordinator, "camera", None) is None:
         raise HomeAssistantError("Không tìm thấy camera")
     return coordinator
 
 
-def _require_known_face(coordinator, face_id) -> int:
-    state = getattr(getattr(coordinator, "face_history", None), "state", {}) or {}
-    catalog = state.get("catalog") or {}
+def _known_face(catalog: dict, face_id) -> int:
     key = str(face_id)
     if key not in catalog:
         raise HomeAssistantError("Không tìm thấy khuôn mặt trong danh mục hiện tại")
     value = catalog[key]
     known = (value or {}).get("face_id", face_id) if isinstance(value, dict) else face_id
     return int(known)
+
+
+def _require_known_face(coordinator, face_id) -> int:
+    state = getattr(getattr(coordinator, "face_history", None), "state", {}) or {}
+    return _known_face(state.get("catalog") or {}, face_id)
+
+
+async def _async_require_known_face(hass: HomeAssistant, entry, coordinator, face_id) -> int:
+    identifier = face_ops.face_identifier(face_id)
+    if panel_data.is_cloud(entry):
+        state = face.face_state(await coordinator.async_face_snapshot())
+        return _known_face(state.get("catalog") or {}, identifier)
+    return _require_known_face(coordinator, identifier)
 
 
 def _camera_entity_id(hass: HomeAssistant, entry) -> str | None:
@@ -173,7 +201,7 @@ async def async_face_snapshot(hass: HomeAssistant, entry_id: str) -> str:
 async def async_face_add(
     hass: HomeAssistant, entry_id: str, *, name, tag, image=None, face_id=0, use_snapshot=False,
 ) -> None:
-    coordinator = _face_write_coordinator(hass, entry_id)
+    coordinator = await _face_write_coordinator(hass, entry_id)
     if image is None:
         if not use_snapshot:
             raise HomeAssistantError("Cần ảnh chân dung hoặc ảnh chụp từ camera")
@@ -184,16 +212,18 @@ async def async_face_add(
 
 
 async def async_face_update(hass: HomeAssistant, entry_id: str, *, face_id, name=None, tag=None) -> None:
-    coordinator = _face_write_coordinator(hass, entry_id)
-    identifier = _require_known_face(coordinator, face_id)
+    entry = _entry_or_raise(hass, entry_id)
+    coordinator = await _face_write_coordinator(hass, entry_id)
+    identifier = await _async_require_known_face(hass, entry, coordinator, face_id)
     await coordinator.async_command(
         partial(coordinator.camera.face_set, identifier, name=name, tag=tag)
     )
 
 
 async def async_face_delete(hass: HomeAssistant, entry_id: str, *, face_id) -> None:
-    coordinator = _face_write_coordinator(hass, entry_id)
-    identifier = _require_known_face(coordinator, face_id)
+    entry = _entry_or_raise(hass, entry_id)
+    coordinator = await _face_write_coordinator(hass, entry_id)
+    identifier = await _async_require_known_face(hass, entry, coordinator, face_id)
     await coordinator.async_command(coordinator.camera.face_delete, identifier)
 
 
@@ -225,7 +255,13 @@ async def async_history(hass: HomeAssistant, entry_id: str, *, tag: str | None =
 
 def _capabilities(entry, runtime: dict) -> dict:
     if panel_data.is_cloud(entry):
-        return {"settings": True, "faces": False, "history": True, "face_write": False}
+        return {
+            "settings": True,
+            "faces": runtime.get("coordinator") is not None,
+            "history": True,
+            "face_write": _face_writable(entry, runtime),
+            "face_snapshot": False,
+        }
     coordinator = runtime.get("coordinator")
     state = getattr(getattr(coordinator, "face_history", None), "state", {}) or {}
     return {
@@ -233,6 +269,7 @@ def _capabilities(entry, runtime: dict) -> dict:
         "faces": bool(state.get("catalog_available")),
         "history": True,
         "face_write": _face_writable(entry, runtime),
+        "face_snapshot": True,
     }
 
 

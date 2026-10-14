@@ -12,6 +12,9 @@ from datetime import UTC, datetime
 from typing import Any
 
 MAX_FACE_IMAGE_BYTES = 5 * 1024 * 1024
+# Camera face tag codes recovered from the APK (string resources tag_*). "stranger"
+# is the unknown label; the rest are named groups shown under "familiar" in the app.
+FACE_TAGS = ("family", "friend", "courier", "colleague", "neighbor", "schoolmate", "stranger")
 IMAGE_MAGIC_TYPES = (
     (b"\xff\xd8\xff", "image/jpeg"),
     (b"\x89PNG\r\n\x1a\n", "image/png"),
@@ -143,7 +146,7 @@ def face_state(data: Any) -> dict[str, Any]:
         catalog[identifier] = {
             "face_id": identifier,
             "name": name[:255] if isinstance(name, str) and name else None,
-            "tag": tag if isinstance(tag, str) and tag in {"familiar", "stranger", ""} else None,
+            "tag": tag if isinstance(tag, str) and tag in {*FACE_TAGS, ""} else None,
             "fresh_time": timestamp(record.get("fresh_time")),
             "create_time": timestamp(record.get("create_time")),
             "modify_time": timestamp(record.get("modify_time")),

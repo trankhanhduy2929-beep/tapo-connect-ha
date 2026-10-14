@@ -51,6 +51,16 @@ class CloudSettingsCoordinator(DataUpdateCoordinator[dict]):
             await self.hass.async_add_executor_job(self.camera.update_profile, profile)
         return self.camera
 
+    async def async_ensure_camera(self):
+        return await self._async_camera()
+
+    async def async_face_snapshot(self):
+        try:
+            camera = await self._async_camera()
+            return await self.hass.async_add_executor_job(camera.face_snapshot)
+        except (NotificationError, TapoConnectionError, ValueError, TypeError) as error:
+            raise HomeAssistantError("Không đọc được danh mục khuôn mặt qua cloud") from error
+
     def _accept(self, snapshot):
         basic = snapshot.get("device_info", {}).get("basic_info")
         if not isinstance(basic, dict) or not basic.get("device_model"):

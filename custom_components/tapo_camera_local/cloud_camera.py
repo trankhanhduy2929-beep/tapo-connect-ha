@@ -10,6 +10,7 @@ from urllib.parse import quote
 
 import requests
 
+from . import face_ops
 from .cloud_account import AUTH_CODES, CloudGateway
 from .notification_client import (
     MAX_RESPONSE_BYTES,
@@ -24,12 +25,31 @@ from .tapo_proto.client import (
     TapoProtocolError,
     TapoRequestError,
 )
-from .tapo_proto.controls import ACTIONS, SETTINGS, SETTINGS_BY_KEY, validate_write
+from .tapo_proto.controls import (
+    ACTIONS,
+    FACE_WRITES,
+    SETTINGS,
+    SETTINGS_BY_KEY,
+    validate_write,
+)
 
 SERVICE_PATH = "/api/v2/common/getWebServiceInfo"
 SERVICE_ID = "nbu.iot-app-server.app-v2"
 BASIC_QUERY = {"device_info": {"name": ["basic_info"]}}
-CLOUD_QUERIES = {"getDeviceInfo": BASIC_QUERY, **{
+FACE_READ_QUERIES = {
+    "getFaceDetectionConfig": {"face_detection": {"name": ["detection"]}},
+    "searchFacesInfo": {
+        "face_detection": {
+            "search_faces_info": {
+                "update_time": 0,
+                "strategy": "select",
+                "face_id": [],
+                "tag": [],
+            }
+        }
+    },
+}
+CLOUD_QUERIES = {"getDeviceInfo": BASIC_QUERY, **FACE_READ_QUERIES, **{
     method: params for method, params in READ_QUERIES.items()
     if method in {setting.query for setting in SETTINGS} | {"getPresetConfig", "getSdCardStatus", "getAlertConfig"}
 }}
@@ -127,7 +147,7 @@ class CloudCamera:
             else:
                 if len(queries) != 1:
                     raise ValueError("Only one explicit write is permitted")
-                allowed_methods = {setting.method for setting in SETTINGS} | {ACTIONS[key][0] for key in CLOUD_ACTIONS} | {"motorMoveToPreset"}
+                allowed_methods = {setting.method for setting in SETTINGS} | {ACTIONS[key][0] for key in CLOUD_ACTIONS} | {"motorMoveToPreset"} | set(FACE_WRITES)
                 if method not in allowed_methods:
                     raise ValueError("This cloud camera command is not enabled")
                 validate_write(method, params)
@@ -160,6 +180,32 @@ class CloudCamera:
         if isinstance(result, Exception):
             raise result
         return result
+
+    def face_snapshot(self) -> dict:
+        """Face config + catalog in the shape ``face.face_state`` expects."""
+        parsed = self._batch(
+            {method: FACE_READ_QUERIES[method] for method in ("getFaceDetectionConfig", "searchFacesInfo")},
+            read_only=True,
+        )
+        result = {"config": {}, "catalog": {}, "tracking": {}, "history_truncated": False}
+        for method, key in (("getFaceDetectionConfig", "config"), ("searchFacesInfo", "catalog")):
+            value = parsed.get(method)
+            if isinstance(value, dict):
+                result[key] = value
+        return result
+
+    def face_set(self, face_id, *, name=None, tag=None):
+        payload = face_ops.set_face_payload(face_id, name=name, tag=tag)
+        return self.call("setFaceInfo", payload, read_only=False)
+
+    def face_delete(self, face_id):
+        payload = face_ops.delete_face_payload(face_id)
+        return self.call("setFaceInfo", payload, read_only=False)
+
+    def face_add(self, name, tag, image, *, face_id=0):
+        encoded = face_ops.encode_face_image(image)
+        payload = face_ops.add_face_payload(name, tag, encoded, face_id=face_id)
+        return self.call("doFaceInfoAdd", payload, read_only=False)
 
     def device_snapshot(self):
         with self._lock:
