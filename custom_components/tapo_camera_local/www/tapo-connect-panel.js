@@ -50,10 +50,36 @@ const FACE_TAGS = ["family", "friend", "courier", "colleague", "neighbor", "scho
 const faceTagOptions = (selected) =>
   FACE_TAGS.map((tag) => `<option value="${tag}"${tag === selected ? " selected" : ""}>${esc(TAG_LABELS[tag] || tag)}</option>`).join("");
 
+// Untinted face portraits are not available from the camera, so each face keeps a
+// fixed pastel avatar derived from its id; the same face always gets the same tone.
+const AVATAR_TONES = [
+  { background: "#ecfdf5", text: "#007a55", ring: "#a4f4cf" },
+  { background: "#f0f9ff", text: "#0069a8", ring: "#b8e6fe" },
+  { background: "#eef2ff", text: "#432dd7", ring: "#c6d2ff" },
+  { background: "#fdf2f8", text: "#c6005c", ring: "#fccee8" },
+  { background: "#fffbeb", text: "#bb4d00", ring: "#fee685" },
+  { background: "#f5f3ff", text: "#7008e7", ring: "#ddd6ff" },
+];
+
+const avatarTone = (seed) => {
+  const text = String(seed == null ? "" : seed);
+  let hash = 0;
+  for (let i = 0; i < text.length; i += 1) {
+    hash = (hash * 31 + text.charCodeAt(i)) | 0;
+  }
+  return AVATAR_TONES[Math.abs(hash) % AVATAR_TONES.length];
+};
+
+const avatarMarkup = (seed, name) => {
+  const tone = avatarTone(seed);
+  const label = String(name == null ? "" : name).trim().charAt(0).toLocaleUpperCase("vi") || "?";
+  return `<div class="avatar" style="background:${tone.background};color:${tone.text};border-color:${tone.ring}" aria-hidden="true">${esc(label)}</div>`;
+};
+
 const TABS = [
-  { id: "settings", label: "Cài đặt" },
   { id: "faces", label: "Face ID" },
   { id: "history", label: "Lịch sử" },
+  { id: "settings", label: "Cài đặt" },
 ];
 
 const css = `
@@ -229,7 +255,7 @@ class TapoConnectPanel extends HTMLElement {
     this.attachShadow({ mode: "open" });
     this._hass = null;
     this._loaded = false;
-    this._tab = "settings";
+    this._tab = "faces";
     this._cameras = [];
     this._entryId = null;
     this._overview = null;
@@ -653,7 +679,7 @@ class TapoConnectPanel extends HTMLElement {
       }
       const items = people
         .map(
-          (person) => `<div class="item"><div class="avatar">${esc((person.name || "?").slice(0, 1).toUpperCase())}</div>
+          (person) => `<div class="item">${avatarMarkup(person.face_id || person.name, person.name)}
             <div class="grow"><div class="name">${esc(person.name || "Không rõ")}</div>
             <div class="meta">Lần cuối: ${esc(formatTime(person.notified_at))}</div></div>
             ${person.tag ? `<span class="badge ${esc(person.tag)}">${esc(tagLabel(person.tag))}</span>` : ""}</div>`
@@ -706,10 +732,9 @@ class TapoConnectPanel extends HTMLElement {
 
   _renderFaceItem(face, writable) {
     const id = face.face_id;
-    const initial = esc((face.name || "?").slice(0, 1).toUpperCase());
     const avatar = face.image_url
       ? `<div class="avatar"><img src="${esc(face.image_url)}" alt="" loading="lazy"></div>`
-      : `<div class="avatar">${initial}</div>`;
+      : avatarMarkup(id, face.name);
     const disabled = this._busy ? " disabled" : "";
     const editing = writable && String(this._editingFace) === String(id);
     const confirming = writable && String(this._confirmDelete) === String(id);
